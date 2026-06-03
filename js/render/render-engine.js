@@ -279,9 +279,10 @@ function render() {
               </div>
           </div>`;
 
+      const bgColor = w.type === 'image' ? 'transparent' : w.style.bodyBg;
       return `
       <div class="${widgetClass}" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" 
-           style="transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${w.style.bodyBg}; color:${w.style.textCol}; border-color:${w.style.borderCol}">
+           style="transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${bgColor}; color:${w.style.textCol}; border-color:${w.style.borderCol}">
           ${headerHtml}
           <div id="inspect-cat-${i}" class="design-inspector hidden">${renderInspectorMarkup('cat', i, w.style)}</div>
           <div class="widget-body" style="font-size:${w.style.fontSz}">${renderWidgetBody(w, i)}</div>

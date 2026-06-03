@@ -98,6 +98,7 @@
   object-fit: contain;
   display: block;
   background: transparent;
+  image-rendering: -webkit-optimize-contrast;
 }
 
 .image-cover-widget.empty {
