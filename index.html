@@ -82,10 +82,18 @@
             <summary><i class="fas fa-folder-open"></i> image options</summary>
             <div id="category-controls" class="tool-panel" style="margin-top:12px;"></div> 
             <button class="workspace-btn" onclick="triggerUploadImage()" style="width:190px; margin-left:26px; margin-right:auto;margin-bottom:10px;">upload image</button>
-          <input id="image-widget-upload" type="file" accept="image/*" onchange="handleUploadImageFile(this.files)" style="display:none">
+            <input id="image-widget-upload" type="file" accept="image/*" onchange="handleUploadImageFile(this.files)" style="display:none">
           </details>
 
-         
+          <details class="tool-section" style="margin-bottom:12px;">
+            <summary><i class="fas fa-database"></i> transfer data</summary>
+            <div class="tool-panel" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
+              <button class="workspace-btn" onclick="exportAppData()">Export JSON</button>
+              <button class="workspace-btn secondary-btn" onclick="triggerImportData()">Import JSON</button>
+              <input id="import-data-file" type="file" accept="application/json" onchange="handleImportDataFile(this.files)" style="display:none">
+            </div>
+          </details>
+
         </div>
       </div>
 

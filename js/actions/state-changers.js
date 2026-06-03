@@ -261,6 +261,57 @@ function handleUploadImageFile(files) {
   render();
 }
 
+function exportAppData() {
+  const exportBlob = new Blob([JSON.stringify({
+    version: 1,
+    data,
+    frontPageWidgets
+  }, null, 2)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(exportBlob);
+  link.download = `to-do-export-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+}
+
+function triggerImportData() {
+  const input = document.getElementById('import-data-file');
+  if (!input) return;
+  input.value = '';
+  input.click();
+}
+
+function handleImportDataFile(files) {
+  if (!files || !files.length) return;
+  const file = files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = JSON.parse(reader.result);
+      if (!imported || typeof imported !== 'object') throw new Error('Invalid JSON');
+      if (!Array.isArray(imported.data) || !Array.isArray(imported.frontPageWidgets)) {
+        throw new Error('The import file must contain a valid data structure.');
+      }
+      if (!confirm('Importing data will replace your current workspace and lists. Continue?')) return;
+      data = imported.data.map(normalizeCategory);
+      frontPageWidgets = imported.frontPageWidgets.map(widget => normalizeWidget(widget));
+      activeIdx = null;
+      activeSubId = null;
+      storage.set('devos_horizon_v7', data);
+      storage.set('devos_front_geo_v7', frontPageWidgets);
+      render();
+      alert('Data imported successfully.');
+    } catch (error) {
+      console.error(error);
+      alert('Unable to import data. Please check the JSON file and try again.');
+    }
+  };
+  reader.readAsText(file);
+}
+
 // Subcategory Helpers
 function addSubcategory() {
   if (activeIdx === null) return;
