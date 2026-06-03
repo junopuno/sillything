@@ -1,0 +1,19 @@
+/* Main stylesheet: imports the categorized CSS files. */
+
+@import url("./css/base/base.css");
+
+@import url("./css/layout/panel-mechanics.css");
+@import url("./css/layout/left-sidebar.css");
+@import url("./css/layout/main-canvas.css");
+@import url("./css/layout/right-sidebar.css");
+
+@import url("./css/widgets/widget-shell.css");
+@import url("./css/widgets/inspector.css");
+@import url("./css/widgets/dashboard-widgets.css");
+@import url("./css/widgets/time-widgets.css");
+@import url("./css/widgets/schedule-widget.css");
+@import url("./css/widgets/checklist-widget.css");
+@import url("./css/widgets/task-and-link-widgets.css");
+@import url("./css/widgets/planner-enhancements.css");
+
+@import url("./css/utilities/utilities.css");
