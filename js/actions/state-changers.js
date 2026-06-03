@@ -93,8 +93,36 @@ function clearCompletedTasks() {
   render();
 }
 
-function openProject(i, event) { if (!categoryDragMoved) { activeIdx = i; activeSubId = null; render(); } }
-function goHome() { activeIdx = null; activeSubId = null; render(); }
+function updateMenuActiveStates() {
+  const frontpageBtn = document.getElementById('frontpage-btn');
+  const plineringBtn = document.getElementById('planering-btn');
+  if (frontpageBtn) {
+    if (activeIdx === null) {
+      frontpageBtn.classList.add('active');
+    } else {
+      frontpageBtn.classList.remove('active');
+    }
+  }
+  if (plineringBtn) {
+    plineringBtn.classList.remove('active');
+  }
+}
+
+function openProject(i, event) { 
+  if (!categoryDragMoved) { 
+    activeIdx = i; 
+    activeSubId = null; 
+    render();
+    updateMenuActiveStates();
+  } 
+}
+
+function goHome() { 
+  activeIdx = null; 
+  activeSubId = null; 
+  render();
+  updateMenuActiveStates();
+}
 function delWid(i) { data[activeIdx].widgets.splice(i, 1); render(); }
 function updateWidgetProp(wi, prop, val) { data[activeIdx].widgets[wi][prop] = val; render(); }
 function appendCalculatorToken(wi, token) {

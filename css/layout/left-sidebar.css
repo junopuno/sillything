@@ -51,20 +51,35 @@
   color: #5d4a7c;
   cursor: pointer;
   transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
-}
-.menu-item:hover,
-.menu-item.active {
-  background: rgba(255, 110, 199, 0.10);
-  color: #6f2aa8;
-  transform: translateX(2px);
-}
+  margin-bottom: 6px;
 }
 
-.menu-item:hover,
-.menu-item.active {
-  background: rgba(255, 110, 199, 0.12);
-  color: #7b2cbf;
+/* Frontpage button styles */
+#frontpage-btn:hover {
+  background: rgba(255, 176, 59, 0.15);
+  color: #d97706;
+  transform: translateX(2px);
+}
+
+#frontpage-btn.active {
+  background: rgba(255, 176, 59, 0.25);
+  color: #d97706;
   transform: translateX(3px);
+  font-weight: 700;
+}
+
+/* Planering button styles */
+#planering-btn:hover {
+  background: rgba(124, 58, 231, 0.15);
+  color: #7c3ae7;
+  transform: translateX(2px);
+}
+
+#planering-btn.active {
+  background: rgba(124, 58, 231, 0.25);
+  color: #7c3ae7;
+  transform: translateX(3px);
+  font-weight: 700;
 }
 
 .list-section {
