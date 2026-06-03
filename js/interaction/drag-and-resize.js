@@ -4,15 +4,22 @@ function initPhysics() {
   if (typeof interact === 'undefined') return;
 
   interact('.widget').draggable({
+    inertia: true,
     allowFrom: '.widget-header, .image-cover-widget',
     listeners: {
       start(event) { event.target.style.zIndex = "1000"; },
       move(event) {
         const target = event.target;
-        const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-        const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-        target.style.transform = `translate(${x}px, ${y}px)`;
-        target.setAttribute('data-x', x); target.setAttribute('data-y', y);
+        const prevX = parseFloat(target.getAttribute('data-x')) || 0;
+        const prevY = parseFloat(target.getAttribute('data-y')) || 0;
+        const x = prevX + event.dx;
+        const y = prevY + event.dy;
+        // batch DOM updates via requestAnimationFrame for smoother rendering
+        if (target._dragRaf) cancelAnimationFrame(target._dragRaf);
+        target._dragRaf = requestAnimationFrame(() => {
+          target.style.transform = `translate(${x}px, ${y}px)`;
+          target.setAttribute('data-x', x); target.setAttribute('data-y', y);
+        });
         if (activeIdx === null) {
           let w = frontPageWidgets.find(f => f.id === target.dataset.geoId);
           if (w) w.pos = { x, y };
@@ -44,14 +51,20 @@ function initPhysics() {
   });
 
   interact('.category-shortcut-card').draggable({
+    inertia: true,
     listeners: {
       move(event) {
         categoryDragMoved = true;
         const target = event.target;
-        const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-        const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-        target.style.transform = `translate(${x}px, ${y}px)`;
-        target.setAttribute('data-x', x); target.setAttribute('data-y', y);
+        const prevX = parseFloat(target.getAttribute('data-x')) || 0;
+        const prevY = parseFloat(target.getAttribute('data-y')) || 0;
+        const x = prevX + event.dx;
+        const y = prevY + event.dy;
+        if (target._dragRaf) cancelAnimationFrame(target._dragRaf);
+        target._dragRaf = requestAnimationFrame(() => {
+          target.style.transform = `translate(${x}px, ${y}px)`;
+          target.setAttribute('data-x', x); target.setAttribute('data-y', y);
+        });
         data[target.dataset.catIndex].pos = { x, y };
       },
       end() {

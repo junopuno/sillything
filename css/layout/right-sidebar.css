@@ -1,14 +1,14 @@
 /* RIGHT PANEL SUGGESTIONS */
 .right-panel {
-  width: 340px;
+  width: var(--right-panel-width, 280px);
   background: linear-gradient(180deg, rgba(255, 241, 255, 0.96), rgba(237, 247, 255, 0.98));
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(12px);
   border-left: 1px solid rgba(255, 111, 201, 0.25);
-  padding: 28px;
+  padding: var(--panel-padding, 16px);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  border-radius: 40px;
+  border-radius: var(--panel-border-radius, 28px);
   box-shadow: var(--panel-shadow);
   height: 100vh;
   overflow-y: auto;
@@ -17,7 +17,7 @@
 
 .tool-section {
   border: 1px solid rgba(255, 111, 201, 0.28);
-  border-radius: 20px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.82);
   padding: 0;
   overflow: hidden;
@@ -44,10 +44,10 @@
 }
 
 .tool-section .tool-panel {
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .tool-note {
@@ -64,7 +64,7 @@
 }
 
 .right-header h3 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #4a2c62;
 }

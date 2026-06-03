@@ -1,13 +1,13 @@
 /* LEFT NAVIGATION SIDEBAR */
 .left-panel {
-  width: 300px;
+  width: var(--left-panel-width, 240px);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 237, 246, 0.96));
   border-right: 1px solid rgba(255, 111, 201, 0.25);
   display: flex;
   flex-direction: column;
-  padding: 26px;
+  padding: var(--panel-padding, 16px);
   flex-shrink: 0;
-  border-radius: 40px;
+  border-radius: var(--panel-border-radius, 28px);
   box-shadow: var(--panel-shadow);
 }
 
@@ -19,8 +19,8 @@
 }
 
 .avatar {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   background: linear-gradient(135deg, #ff9ce1 0%, #ffa9d4 100%);
   border-radius: 50%;
   display: flex;
@@ -40,24 +40,24 @@
   font-size: 0.78rem;
 }
 
-.menu-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 32px;
-}
-
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 18px;
-  font-size: 0.95rem;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 0.9rem;
   font-weight: 600;
   color: #5d4a7c;
   cursor: pointer;
-  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+}
+.menu-item:hover,
+.menu-item.active {
+  background: rgba(255, 110, 199, 0.10);
+  color: #6f2aa8;
+  transform: translateX(2px);
+}
 }
 
 .menu-item:hover,
@@ -77,11 +77,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--text-muted);
-  letter-spacing: 0.7px;
-  margin-bottom: 14px;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
 }
 
 .section-title button {
@@ -90,8 +90,8 @@
   border-radius: 999px;
   color: #7b2cbf;
   cursor: pointer;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
 }
 
 .dynamic-lists div {

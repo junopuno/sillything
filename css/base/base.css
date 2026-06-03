@@ -2,6 +2,7 @@
 
 :root {
   --ui-accent: #ff6ec7;
+  --fg: var(--text-dark);
   --gradient-1: #fff0f7;
   --gradient-2: #e2f7ff;
   --page-bg: linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 55%, #fef5c3 100%);
@@ -10,6 +11,11 @@
   --sidebar-bg: rgba(255, 255, 255, 0.9);
   --panel-shadow: 0 18px 40px rgba(163, 78, 255, 0.14);
   --panel-border: rgba(255, 111, 201, 0.24);
+  /* Layout tuning variables (customizable) */
+  --left-panel-width: 240px;
+  --right-panel-width: 280px;
+  --panel-padding: 16px;
+  --panel-border-radius: 28px;
 }
 
 * {

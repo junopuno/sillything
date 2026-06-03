@@ -19,9 +19,12 @@
 @import url("./css/utilities/utilities.css");
 
 /* Import UI: toast notifications and progress */
+/* Toast container uses theme variables */
 #toast-container { position: fixed; right: 16px; top: 16px; z-index: 9999; }
 .toast { margin: 6px 0; padding: 10px 14px; border-radius: 6px; color: #fff; font-size: 13px; box-shadow: 0 6px 14px rgba(0,0,0,0.08); }
-.toast.success { background: #10b981; }
-.toast.error { background: #ef4444; }
+.toast.success { background: linear-gradient(90deg, #059669, #10b981); }
+.toast.error { background: linear-gradient(90deg, #dc2626, #ef4444); }
 #import-progress { display: none; }
-#import-drop-zone { cursor: pointer; }
+#import-drop-zone { cursor: pointer; border-radius:8px; }
+#import-drop-zone:hover { box-shadow: 0 8px 20px rgba(99, 39, 76, 0.06); }
+#import-drop-zone:focus { outline: none; box-shadow: 0 0 0 4px rgba(255,110,199,0.12); border-color: var(--ui-accent); }

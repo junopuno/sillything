@@ -70,15 +70,16 @@
 .category-shortcut-card {
   background: #ffffff;
   border: 3px solid;
-  border-radius: 14px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 12px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: 0.18s;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-shadow: 0 2px 1px  rgba(237, 108, 179, 0.3);
   color: black;
+  overflow: auto;
 }
 
 .category-shortcut-card:hover {
