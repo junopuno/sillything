@@ -295,7 +295,6 @@ function render() {
               </div>
           </div>`;
 
-      const bgColor = w.type === 'image' ? 'transparent' : w.style.bodyBg;
       const widgetStyle = `transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${bgColor}; color:${w.style.textCol}; border-color:${w.style.borderCol}; border-width:${w.style.borderWidth}; border-radius:${w.style.cornerRadius}`;
       
       return `
