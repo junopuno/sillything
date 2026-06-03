@@ -23,20 +23,6 @@ let activeSubId = null;
 let categoryDragMoved = false;
 let openInspectorState = null;
 
-let frontPageWidgets = storage.get('devos_front_geo_v7', [
-  { id: 'geo-date', type: 'date', title: 'Today', pos: { x: 40, y: 30 }, size: { w: 160, h: 180 }, style: createDefaultStyle() },
-  { id: 'geo-cal', type: 'cal', title: 'Calendar Grid', pos: { x: 230, y: 30 }, size: { w: 320, h: 180 }, style: createDefaultStyle() }
-]);
-
-let widgetPresets = storage.get('devos_widget_presets_v7', [
-  { id: 'preset-clean', name: 'Clean', style: createDefaultStyle() },
-  { id: 'preset-bold', name: 'Bold', style: { ...createDefaultStyle(), borderWidth: '2px', headerHeight: '45px', headerBorderBottom: '2px solid #7b2cbf' } },
-  { id: 'preset-minimal', name: 'Minimal', style: { ...createDefaultStyle(), borderWidth: '0px', headerHeight: '35px', headerBg: 'transparent', headerBorderBottom: 'none' } }
-]);
-
-const taskStatuses = ['todo', 'doing', 'done'];
-const priorityLabels = { low: 'Low', medium: 'Medium', high: 'High' };
-
 function createDefaultStyle() {
   return {
     // Colors
@@ -60,6 +46,20 @@ function createDefaultStyle() {
     showHeader: true
   };
 }
+
+let frontPageWidgets = storage.get('devos_front_geo_v7', [
+  { id: 'geo-date', type: 'date', title: 'Today', pos: { x: 40, y: 30 }, size: { w: 160, h: 180 }, style: createDefaultStyle() },
+  { id: 'geo-cal', type: 'cal', title: 'Calendar Grid', pos: { x: 230, y: 30 }, size: { w: 320, h: 180 }, style: createDefaultStyle() }
+]);
+
+let widgetPresets = storage.get('devos_widget_presets_v7', [
+  { id: 'preset-clean', name: 'Clean', style: createDefaultStyle() },
+  { id: 'preset-bold', name: 'Bold', style: { ...createDefaultStyle(), borderWidth: '2px', headerHeight: '45px', headerBorderBottom: '2px solid #7b2cbf' } },
+  { id: 'preset-minimal', name: 'Minimal', style: { ...createDefaultStyle(), borderWidth: '0px', headerHeight: '35px', headerBg: 'transparent', headerBorderBottom: 'none' } }
+]);
+
+const taskStatuses = ['todo', 'doing', 'done'];
+const priorityLabels = { low: 'Low', medium: 'Medium', high: 'High' };
 
 function createDefaultTask(text = 'New task') {
   return {
