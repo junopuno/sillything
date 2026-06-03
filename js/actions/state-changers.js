@@ -1,0 +1,400 @@
+/* --- STATE CHANGERS --- */
+
+function addProject() {
+  const nextNumber = data.length + 1;
+  const planningSub = createDefaultSubcategory('Planering');
+  const taskSub = createDefaultSubcategory('Tasks');
+  const taskWidget = createDefaultWidget('list');
+  const scheduleWidget = createDefaultWidget('schedule');
+  taskWidget.subcategoryId = taskSub.id;
+  scheduleWidget.subcategoryId = planningSub.id;
+  data.push(normalizeCategory({
+    name: `Ny kategori ${nextNumber}`,
+    icon: 'fa-folder',
+    subcategories: [planningSub, taskSub],
+    widgets: [taskWidget, scheduleWidget],
+    pos: { x: 50 + (data.length * 230), y: 300 },
+    size: { w: 220, h: 140 },
+    bgColor: '#ffffff'
+  }, data.length));
+  render();
+}
+
+function createStarterWorkspace() {
+  const planningSub = createDefaultSubcategory('Planering');
+  const focusSub = createDefaultSubcategory('Fokus');
+  const routinesSub = createDefaultSubcategory('Rutiner');
+  const widgets = [
+    createDefaultWidget('list'),
+    createDefaultWidget('board'),
+    createDefaultWidget('schedule'),
+    createDefaultWidget('habits'),
+    createDefaultWidget('pomodoro'),
+    createDefaultWidget('goals')
+  ];
+  widgets[0].subcategoryId = planningSub.id;
+  widgets[1].subcategoryId = planningSub.id;
+  widgets[2].subcategoryId = focusSub.id;
+  widgets[3].subcategoryId = routinesSub.id;
+  widgets[4].subcategoryId = focusSub.id;
+  widgets[5].subcategoryId = routinesSub.id;
+
+  data.push(normalizeCategory({
+    name: 'Planner',
+    icon: 'fa-calendar',
+    bgColor: '#f8fafc',
+    accent: '#2563eb',
+    subcategories: [planningSub, focusSub, routinesSub],
+    widgets,
+    pos: { x: 50 + (data.length * 230), y: 300 },
+    size: { w: 220, h: 140 }
+  }, data.length));
+  activeIdx = data.length - 1;
+  render();
+}
+
+function addWidget() {
+  const type = document.getElementById('w-type').value;
+  const widget = createDefaultWidget(type);
+  widget.subcategoryId = activeSubId && activeSubId !== 'uncategorized' ? activeSubId : null;
+  data[activeIdx].widgets.push(widget);
+  render();
+}
+
+function addTaskWidget() {
+  const widget = createDefaultWidget('list');
+  widget.subcategoryId = activeSubId && activeSubId !== 'uncategorized' ? activeSubId : null;
+  data[activeIdx].widgets.push(widget);
+  render();
+}
+
+function duplicateWidget(index) {
+  const copy = JSON.parse(JSON.stringify(data[activeIdx].widgets[index]));
+  copy.pos = { x: copy.pos.x + 28, y: copy.pos.y + 28 };
+  copy.title = `${copy.title} COPY`;
+  data[activeIdx].widgets.push(copy);
+  render();
+}
+
+function deleteActiveCategory() {
+  if (activeIdx === null) return;
+  data.splice(activeIdx, 1);
+  activeIdx = null;
+  activeSubId = null;
+  render();
+}
+
+function clearCompletedTasks() {
+  if (activeIdx === null) return;
+  data[activeIdx].widgets.forEach(widget => {
+    if (widget.tasks) widget.tasks = widget.tasks.filter(task => !task.done && task.status !== 'done');
+    if (widget.checkItems) widget.checkItems = widget.checkItems.filter(item => !item.done);
+  });
+  render();
+}
+
+function openProject(i, event) { if (!categoryDragMoved) { activeIdx = i; activeSubId = null; render(); } }
+function goHome() { activeIdx = null; activeSubId = null; render(); }
+function delWid(i) { data[activeIdx].widgets.splice(i, 1); render(); }
+function updateWidgetProp(wi, prop, val) { data[activeIdx].widgets[wi][prop] = val; render(); }
+function appendCalculatorToken(wi, token) {
+  let w = data[activeIdx].widgets[wi];
+  w.calcInput = `${w.calcInput || ''}${token}`;
+  render();
+}
+function deleteCalculatorChar(wi) {
+  let w = data[activeIdx].widgets[wi];
+  w.calcInput = (w.calcInput || '').slice(0, -1);
+  render();
+}
+function clearCalculator(wi) {
+  let w = data[activeIdx].widgets[wi];
+  w.calcInput = '';
+  w.calcResult = '';
+  render();
+}
+function appendGraphToken(wi, token) {
+  let w = data[activeIdx].widgets[wi];
+  w.graphExpr = `${w.graphExpr || ''}${token}`;
+  render();
+}
+function deleteGraphChar(wi) {
+  let w = data[activeIdx].widgets[wi];
+  w.graphExpr = (w.graphExpr || '').slice(0, -1);
+  render();
+}
+function clearGraphExpr(wi) {
+  let w = data[activeIdx].widgets[wi];
+  w.graphExpr = '';
+  render();
+}
+function updateFrontTitle(id, val) { let w = frontPageWidgets.find(i => i.id === id); if (w) w.title = val; render(); }
+
+function updateCategoryName(value, shouldRender = true) {
+  data[activeIdx].name = value || `Kategori ${activeIdx + 1}`;
+  if (shouldRender) render();
+  else {
+    document.getElementById('category-title-banner').innerText = data[activeIdx].name;
+    document.getElementById('category-index').innerText = data[activeIdx].name;
+    storage.set('devos_horizon_v7', data);
+  }
+}
+
+function updateCategoryIcon(value) {
+  data[activeIdx].icon = value;
+  data[activeIdx].iconImage = '';
+  render();
+}
+
+function updateCategoryIconImage(value) {
+  data[activeIdx].iconImage = value.trim();
+  render();
+}
+
+function updateCategoryIconImageFromFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    data[activeIdx].iconImage = reader.result;
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearCategoryIconImage() {
+  data[activeIdx].iconImage = '';
+  render();
+}
+
+function addMediaFiles(wi, files) {
+  const widget = data[activeIdx].widgets[wi];
+  const fileList = Array.from(files || []);
+  if (!fileList.length) return;
+
+  let pending = fileList.length;
+  fileList.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      widget.mediaItems.push({
+        name: file.name,
+        type: file.type,
+        src: reader.result
+      });
+      pending -= 1;
+      if (pending === 0) render();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function deleteMediaItem(wi, mediaIndex) {
+  data[activeIdx].widgets[wi].mediaItems.splice(mediaIndex, 1);
+  render();
+}
+
+function setImageCoverFile(wi, file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    data[activeIdx].widgets[wi].imageSrc = reader.result;
+    data[activeIdx].widgets[wi].imageName = file.name;
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+
+function setImageCoverUrl(wi, value) {
+  data[activeIdx].widgets[wi].imageSrc = value.trim();
+  data[activeIdx].widgets[wi].imageName = value.trim() ? 'Linked image' : '';
+  render();
+}
+
+function clearImageCover(wi) {
+  data[activeIdx].widgets[wi].imageSrc = '';
+  data[activeIdx].widgets[wi].imageName = '';
+  render();
+}
+
+function updateCategoryAccent(value) {
+  data[activeIdx].accent = value;
+  document.documentElement.style.setProperty('--ui-accent', value);
+  render();
+}
+
+function triggerUploadImage() {
+  if (activeIdx === null) {
+    if (!data.length) addProject();
+    activeIdx = data.length - 1;
+    activeSubId = null;
+    render();
+  }
+  const input = document.getElementById('image-widget-upload');
+  if (input) {
+    input.value = '';
+    input.click();
+  }
+}
+
+function handleUploadImageFile(files) {
+  if (!files || !files.length) return;
+  const file = files[0];
+  if (!file) return;
+  if (activeIdx === null) {
+    if (!data.length) addProject();
+    activeIdx = data.length - 1;
+    activeSubId = null;
+  }
+
+  const widget = createDefaultWidget('image');
+  widget.subcategoryId = activeSubId && activeSubId !== 'uncategorized' ? activeSubId : null;
+  widget.title = '';
+  widget.imageName = file.name;
+  data[activeIdx].widgets.push(widget);
+  const newIndex = data[activeIdx].widgets.length - 1;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    data[activeIdx].widgets[newIndex].imageSrc = reader.result;
+    render();
+  };
+  reader.readAsDataURL(file);
+  render();
+}
+
+// Subcategory Helpers
+function addSubcategory() {
+  if (activeIdx === null) return;
+  const nextNumber = (data[activeIdx].subcategories || []).length + 1;
+  const subcategory = createDefaultSubcategory(`Subkategori ${nextNumber}`);
+  data[activeIdx].subcategories.push(subcategory);
+  activeSubId = subcategory.id;
+  render();
+}
+
+function selectSubcategory(subcategoryId) {
+  activeSubId = subcategoryId;
+  render();
+}
+
+function updateSubcategoryName(subcategoryId, value) {
+  const subcategory = data[activeIdx].subcategories.find(item => item.id === subcategoryId);
+  if (!subcategory) return;
+  subcategory.name = value || 'Untitled section';
+  render();
+}
+
+function deleteSubcategory(subcategoryId) {
+  const category = data[activeIdx];
+  category.subcategories = category.subcategories.filter(item => item.id !== subcategoryId);
+  category.widgets.forEach(widget => {
+    if (widget.subcategoryId === subcategoryId) widget.subcategoryId = null;
+  });
+  if (activeSubId === subcategoryId) activeSubId = null;
+  render();
+}
+
+function moveWidgetToSubcategory(widgetIndex, subcategoryId) {
+  data[activeIdx].widgets[widgetIndex].subcategoryId = subcategoryId || null;
+  render();
+}
+
+// List Helpers
+function addTask(wi) {
+  const input = document.getElementById(`t-in-${wi}`);
+  const value = input?.value.trim();
+  if (!value) return;
+  data[activeIdx].widgets[wi].tasks.push(createDefaultTask(value));
+  render();
+}
+
+function toggleTask(wi, ti) {
+  const task = data[activeIdx].widgets[wi].tasks[ti];
+  task.done = !task.done;
+  task.status = task.done ? 'done' : 'todo';
+  render();
+}
+
+function cycleTaskStatus(wi, ti) {
+  const task = data[activeIdx].widgets[wi].tasks[ti];
+  const currentIndex = taskStatuses.indexOf(task.status || 'todo');
+  task.status = taskStatuses[(currentIndex + 1) % taskStatuses.length];
+  task.done = task.status === 'done';
+  render();
+}
+
+function deleteTask(wi, ti) { data[activeIdx].widgets[wi].tasks.splice(ti, 1); render(); }
+
+function updateTaskSub(wi, ti, prop, val) {
+  const task = data[activeIdx].widgets[wi].tasks[ti];
+  task[prop] = val;
+  if (prop === 'status') task.done = val === 'done';
+  if (prop === 'done') task.status = val ? 'done' : 'todo';
+  storage.set('devos_horizon_v7', data);
+}
+
+// Checklist Helpers
+function addCheckItem(wi) { data[activeIdx].widgets[wi].checkItems.push({ text: 'New item', done: false }); render(); }
+function toggleCheckItem(wi, ci) { data[activeIdx].widgets[wi].checkItems[ci].done = !data[activeIdx].widgets[wi].checkItems[ci].done; render(); }
+function updateCheckItemText(wi, ci, val) { data[activeIdx].widgets[wi].checkItems[ci].text = val; storage.set('devos_horizon_v7', data); }
+function deleteCheckItem(wi, ci) { data[activeIdx].widgets[wi].checkItems.splice(ci, 1); render(); }
+
+// Link Helpers
+function addLink(wi) {
+  const labelInput = document.getElementById(`link-label-${wi}`);
+  const urlInput = document.getElementById(`link-url-${wi}`);
+  const url = urlInput.value.trim();
+  if (!url) return;
+  data[activeIdx].widgets[wi].links.push({ label: labelInput.value.trim() || url, url });
+  render();
+}
+
+function deleteLink(wi, li) { data[activeIdx].widgets[wi].links.splice(li, 1); render(); }
+
+// Timer Helpers
+function triggerTimerState(wi, cmd) {
+  let w = data[activeIdx].widgets[wi];
+  if (cmd === 'toggle') w.timerRunning = !w.timerRunning;
+  if (cmd === 'clear') { w.timerRunning = false; w.timerElapsed = 0; }
+  render();
+}
+
+function triggerPomodoro(wi, cmd) {
+  let w = data[activeIdx].widgets[wi];
+  if (cmd === 'toggle') w.pomodoroRunning = !w.pomodoroRunning;
+  if (cmd === 'reset') { w.pomodoroRunning = false; w.pomodoroSeconds = 0; }
+  if (cmd === 'add15') { w.pomodoroSeconds = (w.pomodoroSeconds || 0) + 15 * 60; }
+  if (cmd === 'add30') { w.pomodoroSeconds = (w.pomodoroSeconds || 0) + 30 * 60; }
+  if (cmd === 'add60') { w.pomodoroSeconds = (w.pomodoroSeconds || 0) + 60 * 60; }
+  render();
+}
+
+// Category BG
+function updateCategoryBg(color, shouldRender = true) {
+  data[activeIdx].bgColor = color;
+  document.documentElement.style.setProperty('--page-bg', color);
+  if (shouldRender) render();
+  else storage.set('devos_horizon_v7', data);
+}
+
+// Hourly Schedule Helpers
+function addScheduleRow(wi) { data[activeIdx].widgets[wi].schedItems.push({ hour: '12:00', task: '' }); render(); }
+function updateScheduleHour(wi, ri, val) { data[activeIdx].widgets[wi].schedItems[ri].hour = val; storage.set('devos_horizon_v7', data); }
+function updateScheduleTask(wi, ri, val) { data[activeIdx].widgets[wi].schedItems[ri].task = val; storage.set('devos_horizon_v7', data); }
+function deleteScheduleRow(wi, ri) { data[activeIdx].widgets[wi].schedItems.splice(ri, 1); render(); }
+
+// Habit Helpers
+function addHabit(wi) {
+  data[activeIdx].widgets[wi].habits.push({ name: 'New habit', days: [false, false, false, false, false, false, false] });
+  render();
+}
+
+function updateHabitName(wi, hi, value) {
+  data[activeIdx].widgets[wi].habits[hi].name = value;
+  storage.set('devos_horizon_v7', data);
+}
+
+function toggleHabitDay(wi, hi, di) {
+  const habit = data[activeIdx].widgets[wi].habits[hi];
+  habit.days[di] = !habit.days[di];
+  render();
+}

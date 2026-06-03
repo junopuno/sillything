@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="sv">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>alvis super silly project</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+  </head>
+
+  <body>
+
+    <!-- VÄNSTERPANEL -->
+    <nav id="left-panel" class="left-panel">
+      <div class="panel-toggle-left" style="margin-right:25px" onclick="toggleLeftPanel()"><i class="fas fa-chevron-left"></i></div>
+      
+      </div>
+      <div class="menu-section"style="margin-top: 140px;">
+        <div class="menu-item active" onclick="goHome()"><i class="far fa-sun"></i> frontpage</div>
+        <div class="menu-item"><i class="far fa-calendar-alt"></i> planering</div>
+      </div>
+      <div class="list-section">
+        <div class="section-title"style="color:white;filter:drop-shadow(0 0 px rgba(0,0,0,0.2));font-size:23px;background:rgba(40, 114, 244, 0.3);border-radius:10px; padding:5px"><i class="fas fa-list"style="font-size:20px;color:white"></i> <span style="filter:drop-shadow(0 1px 1px rgba(75, 64, 170, 0.7))">my lists</span>
+          
+          <button onclick="addProject()"><i class="fas fa-plus"></i></button>
+        </div>
+        <div id="nav-list" class="dynamic-lists" style="filter:drop-shadow(0 2px 1px rgba(124, 215, 139, 0.7))"></div>
+      </div>
+    </nav>
+
+    <button id="left-open-btn" class="open-panel-btn left hidden" onclick="toggleLeftPanel()"><i class="fas fa-chevron-right"></i></button>
+
+    <!-- HUVUDINNEHÅLL -->
+    <div id="main-content">
+      <header id="dashboard-header">
+        <div class="greeting-area">
+          <h1 id="greeting-text">pitbulls been here doing this too<span class="dot">.</span></h1>
+          <p class="subtitle">let's lock the fuck in dawg</p>
+        </div>
+      </header>
+
+      <header id="category-header" class="hidden">
+        <div class="category-meta-block">
+          <span id="category-index" class="cat-index-badge">category title</span>
+          <h2 id="category-title-banner">category title</h2>
+        </div>
+      </header>
+
+      <main id="main-canvas" class="workspace-active"></main>
+    </div>
+
+    <!-- HÖGERPANEL -->
+    <aside id="right-panel" class="right-panel">
+      <div class="panel-toggle-right" style="margin-left:25px" onclick="toggleRightPanel()"><i class="fas fa-chevron-right"></i></div>
+      <div class="right-header">
+        <h3><i class="fas fa-wand-magic-sparkles"></i> resources </h3>
+        
+      </div>
+
+      <div id="quick-widget-dock" class="dock-content" style="margin-bottom:10px">
+        <div class="dock-card">
+          
+
+          <details class="tool-section"style="margin-bottom:12px;">
+            <summary><i class="fas fa-th-large"></i> widget tools</summary>
+            <div id="widget-controls" class="tool-panel" style="margin-top:12px;"></div>
+          </details>
+
+          <details class="tool-section"style="margin-bottom:12px;">
+            <summary><i class="fas fa-paint-brush"></i> canvas customization</summary>
+            <div id="canvas-controls" class="tool-panel" style="margin-top:12px;"></div>
+          </details>
+
+          <details class="tool-section"style="margin-bottom:12px;">
+            <summary><i class="fas fa-folder-open"></i> category settings</summary>
+            <div id="category-controls" class="tool-panel" style="margin-top:12px;"></div>
+          </details>
+
+          <details class="tool-section" style="margin-bottom:12px;">
+            <summary><i class="fas fa-folder-open"></i> image options</summary>
+            <div id="category-controls" class="tool-panel" style="margin-top:12px;"></div> 
+            <button class="workspace-btn" onclick="triggerUploadImage()" style="width:190px; margin-left:26px; margin-right:auto;margin-bottom:10px;">upload image</button>
+          <input id="image-widget-upload" type="file" accept="image/*" onchange="handleUploadImageFile(this.files)" style="display:none">
+          </details>
+
+         
+        </div>
+      </div>
+
+     
+    </aside>
+
+    <button id="right-open-btn" class="open-panel-btn right hidden" onclick="toggleRightPanel()"><i class="fas fa-chevron-left"></i></button>
+
+    <script src="js/core/state.js"></script>
+    <script src="js/core/interface.js"></script>
+    <script src="js/core/timers.js"></script>
+    <script src="js/render/render-engine.js"></script>
+    <script src="js/render/inspector.js"></script>
+    <script src="js/widgets/widget-content.js"></script>
+    <script src="js/interaction/drag-and-resize.js"></script>
+    <script src="js/actions/state-changers.js"></script>
+    <script src="js/core/start.js"></script>
+  </body>
+
+</html>

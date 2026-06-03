@@ -1,0 +1,79 @@
+/* --- TICKING SYSTEMS (Clock, Countdown, Timer) --- */
+
+function runGlobalTickingSystems() {
+  const now = new Date();
+  const hrs = now.getHours();
+
+  // Dynamic Greeting
+  let currentGreeting = "Good Night";
+  if (hrs >= 5 && hrs < 12) currentGreeting = "Good Morning";
+  else if (hrs >= 12 && hrs < 17) currentGreeting = "Good Afternoon";
+  else if (hrs >= 17 && hrs < 22) currentGreeting = "Good Evening";
+
+  const greetingText = document.getElementById('greeting-text');
+  if (greetingText && activeIdx === null) {
+    greetingText.innerHTML = `${currentGreeting}, Alva<span class="dot">.</span>`;
+  }
+
+  // Live Clocks
+  if (activeIdx !== null) {
+    data[activeIdx].widgets.forEach((w, index) => {
+      if (w.type === 'clock') {
+        const face = document.getElementById(`clock-face-${index}`);
+        if (face) {
+          face.style.fontSize = w.clockFontSize || '2.2rem';
+          face.style.fontFamily = w.clockFontFamily || 'Inter, sans-serif';
+          face.innerText = formatClockFace(w);
+        }
+      }
+
+      if (w.type === 'countdown' && w.deadline) {
+        const distance = new Date(w.deadline).getTime() - new Date().getTime();
+        const face = document.getElementById(`count-face-${index}`);
+        if (face) {
+          if (distance < 0) { face.innerText = "TIME OUT"; }
+          else {
+            const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((distance % (1000 * 60)) / 1000);
+            face.innerText = `${d}d ${h}h ${m}m ${s}s`;
+          }
+        }
+      }
+      if (w.type === 'timer' && w.timerRunning) {
+        w.timerElapsed += 1;
+        const face = document.getElementById(`timer-face-${index}`);
+        if (face) face.innerText = parseSecondsToTimerFace(w.timerElapsed);
+      }
+      if (w.type === 'pomodoro' && w.pomodoroRunning) {
+        w.pomodoroSeconds = Math.max((w.pomodoroSeconds || 0) - 1, 0);
+        if (w.pomodoroSeconds === 0) w.pomodoroRunning = false;
+        const face = document.getElementById(`pomodoro-face-${index}`);
+        if (face) face.innerText = parseMinutesSeconds(w.pomodoroSeconds);
+      }
+    });
+  }
+}
+setInterval(runGlobalTickingSystems, 1000);
+
+function parseSecondsToTimerFace(totalSecs) {
+  const hrs = Math.floor(totalSecs / 3600).toString().padStart(2, '0');
+  const mins = Math.floor((totalSecs % 3600) / 60).toString().padStart(2, '0');
+  const secs = (totalSecs % 60).toString().padStart(2, '0');
+  return `${hrs}:${mins}:${secs}`;
+}
+
+function parseMinutesSeconds(totalSecs) {
+  const mins = Math.floor(totalSecs / 60).toString().padStart(2, '0');
+  const secs = (totalSecs % 60).toString().padStart(2, '0');
+  return `${mins}:${secs}`;
+}
+
+function formatClockFace(w) {
+  const now = new Date();
+  const options = { hour: '2-digit', minute: '2-digit' };
+  if (w.clockShowSeconds) options.second = '2-digit';
+  options.hour12 = w.clockFormat === '12';
+  return now.toLocaleTimeString('en-US', options);
+}
