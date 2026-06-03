@@ -24,12 +24,42 @@ let categoryDragMoved = false;
 let openInspectorState = null;
 
 let frontPageWidgets = storage.get('devos_front_geo_v7', [
-  { id: 'geo-date', type: 'date', title: 'Today', pos: { x: 40, y: 30 }, size: { w: 160, h: 180 }, style: { headBg: '#ffffff', bodyBg: '#ffffff', textCol: '#1e293b', borderCol: '#e2e8f0', fontSz: '14px' } },
-  { id: 'geo-cal', type: 'cal', title: 'Calendar Grid', pos: { x: 230, y: 30 }, size: { w: 320, h: 180 }, style: { headBg: '#ffffff', bodyBg: '#ffffff', textCol: '#1e293b', borderCol: '#e2e8f0', fontSz: '12px' } }
+  { id: 'geo-date', type: 'date', title: 'Today', pos: { x: 40, y: 30 }, size: { w: 160, h: 180 }, style: createDefaultStyle() },
+  { id: 'geo-cal', type: 'cal', title: 'Calendar Grid', pos: { x: 230, y: 30 }, size: { w: 320, h: 180 }, style: createDefaultStyle() }
+]);
+
+let widgetPresets = storage.get('devos_widget_presets_v7', [
+  { id: 'preset-clean', name: 'Clean', style: createDefaultStyle() },
+  { id: 'preset-bold', name: 'Bold', style: { ...createDefaultStyle(), borderWidth: '2px', headerHeight: '45px', headerBorderBottom: '2px solid #7b2cbf' } },
+  { id: 'preset-minimal', name: 'Minimal', style: { ...createDefaultStyle(), borderWidth: '0px', headerHeight: '35px', headerBg: 'transparent', headerBorderBottom: 'none' } }
 ]);
 
 const taskStatuses = ['todo', 'doing', 'done'];
 const priorityLabels = { low: 'Low', medium: 'Medium', high: 'High' };
+
+function createDefaultStyle() {
+  return {
+    // Colors
+    headBg: '#ffffff',
+    bodyBg: '#ffffff',
+    textCol: '#1e293b',
+    borderCol: '#e2e8f0',
+    // Sizes
+    fontSz: '14px',
+    headerFontSz: '16px',
+    borderWidth: '1px',
+    cornerRadius: '16px',
+    headerHeight: '40px',
+    headerPadding: '12px',
+    bodyPadding: '16px',
+    // Header
+    headerFont: 'Inter, sans-serif',
+    headerTextCol: '#1e293b',
+    headerBorderBottom: '1px solid #e2e8f0',
+    // Display
+    showHeader: true
+  };
+}
 
 function createDefaultTask(text = 'New task') {
   return {
@@ -71,7 +101,7 @@ function createDefaultWidget(type) {
       { name: 'Water', days: [false, false, false, false, false, false, false] },
       { name: 'Focus', days: [false, false, false, false, false, false, false] }
     ],
-    style: { headBg: '#ffffff', bodyBg: '#ffffff', textCol: '#1e293b', borderCol: '#e2e8f0', fontSz: '14px' }
+    style: createDefaultStyle()
   };
 
   if (type === 'board') {

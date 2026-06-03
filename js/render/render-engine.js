@@ -9,6 +9,21 @@ function escapeHtml(value = '') {
     .replaceAll("'", '&#039;');
 }
 
+function getWidgetStyleString(style) {
+  const s = { ...createDefaultStyle(), ...style };
+  return `background:${s.bodyBg}; color:${s.textCol}; border-color:${s.borderCol}; border-width:${s.borderWidth}; border-radius:${s.cornerRadius}`;
+}
+
+function getWidgetHeaderStyleString(style) {
+  const s = { ...createDefaultStyle(), ...style };
+  return `background:${s.headBg}; color:${s.headerTextCol}; font-size:${s.headerFontSz}; font-family:${s.headerFont}; padding:${s.headerPadding}; border-bottom:${s.headerBorderBottom}; height:${s.headerHeight}; display:${s.showHeader ? 'flex' : 'none'}`;
+}
+
+function getWidgetBodyStyleString(style) {
+  const s = { ...createDefaultStyle(), ...style };
+  return `font-size:${s.fontSz}; padding:${s.bodyPadding}`;
+}
+
 function getAllTasks() {
   return data.flatMap((category, categoryIndex) =>
     category.widgets.flatMap((widget, widgetIndex) =>
@@ -179,13 +194,13 @@ function render() {
     let html = renderTodayPanel();
     html += frontPageWidgets.map((w) => `
       <div class="widget" data-geo-id="${w.id}" data-x="${w.pos.x}" data-y="${w.pos.y}" 
-           style="transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${w.style?.bodyBg || '#ffffff'}; color:${w.style?.textCol || '#1e293b'}; border-color:${w.style?.borderCol || '#e2e8f0'}">
-          <div class="widget-header" style="background:${w.style?.headBg || 'rgba(0,0,0,0.01)'}">
+           style="transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; ${getWidgetStyleString(w.style)}">
+          <div class="widget-header" style="${getWidgetHeaderStyleString(w.style)}">
               <input type="text" value="${escapeHtml(w.title)}" onchange="updateFrontTitle('${w.id}', this.value)">
               <div class="widget-controls-group"><i class="fas fa-ellipsis-v" onclick="openInspector('front','${w.id}')"></i></div>
           </div>
           <div id="inspect-front-${w.id}" class="design-inspector hidden">${renderInspectorMarkup('front', w.id, w.style)}</div>
-          <div class="widget-body" style="font-size:${w.style?.fontSz || '14px'}">
+          <div class="widget-body" style="${getWidgetBodyStyleString(w.style)}">
               ${w.type === 'date' ? parseHtmlDateBlock() : parseHtmlCalendarBlock(w.style?.textCol)}
           </div>
       </div>`).join('');
@@ -268,8 +283,9 @@ function render() {
 
     canvas.innerHTML = renderSubcategoryTabs(category) + visibleWidgets.map(({ widget: w, index: i }) => {
       const widgetClass = w.type === 'image' ? 'widget image-widget' : 'widget';
+      const bgColor = w.type === 'image' ? 'transparent' : w.style.bodyBg;
       const headerHtml = w.type === 'image' ? '' : `
-          <div class="widget-header" style="background:${w.style.headBg}">
+          <div class="widget-header" style="${getWidgetHeaderStyleString(w.style)}">
               <input type="text" value="${escapeHtml(w.title)}" onchange="updateWidgetProp(${i}, 'title', this.value)">
               <div class="widget-controls-group">
                   ${renderWidgetSectionMenu(category, i, w)}
@@ -280,12 +296,14 @@ function render() {
           </div>`;
 
       const bgColor = w.type === 'image' ? 'transparent' : w.style.bodyBg;
+      const widgetStyle = `transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${bgColor}; color:${w.style.textCol}; border-color:${w.style.borderCol}; border-width:${w.style.borderWidth}; border-radius:${w.style.cornerRadius}`;
+      
       return `
       <div class="${widgetClass}" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" 
-           style="transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${bgColor}; color:${w.style.textCol}; border-color:${w.style.borderCol}">
+           style="${widgetStyle}">
           ${headerHtml}
           <div id="inspect-cat-${i}" class="design-inspector hidden">${renderInspectorMarkup('cat', i, w.style)}</div>
-          <div class="widget-body" style="font-size:${w.style.fontSz}">${renderWidgetBody(w, i)}</div>
+          <div class="widget-body" style="${getWidgetBodyStyleString(w.style)}">${renderWidgetBody(w, i)}</div>
       </div>`;
     }).join('');
   }
