@@ -17,3 +17,11 @@
 @import url("./css/widgets/planner-enhancements.css");
 
 @import url("./css/utilities/utilities.css");
+
+/* Import UI: toast notifications and progress */
+#toast-container { position: fixed; right: 16px; top: 16px; z-index: 9999; }
+.toast { margin: 6px 0; padding: 10px 14px; border-radius: 6px; color: #fff; font-size: 13px; box-shadow: 0 6px 14px rgba(0,0,0,0.08); }
+.toast.success { background: #10b981; }
+.toast.error { background: #ef4444; }
+#import-progress { display: none; }
+#import-drop-zone { cursor: pointer; }

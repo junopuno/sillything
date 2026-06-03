@@ -274,6 +274,7 @@ function exportAppData() {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(link.href);
+  if (typeof showToast === 'function') showToast('success', 'Export started.');
 }
 
 function triggerImportData() {
@@ -282,20 +283,45 @@ function triggerImportData() {
   input.value = '';
   input.click();
 }
-
 function handleImportDataFile(files) {
   if (!files || !files.length) return;
   const file = files[0];
   if (!file) return;
+
+  const maxSize = 5 * 1024 * 1024; // 5 MB
+  if (file.size > maxSize) {
+    if (!confirm('File is larger than 5MB and may take time to import. Continue?')) return;
+  }
+
+  const progWrap = document.getElementById('import-progress');
+  const progBar = document.getElementById('import-progress-bar');
+  const progText = document.getElementById('import-progress-text');
+  if (progWrap) { progWrap.style.display = 'flex'; if (progBar) progBar.value = 0; if (progText) progText.textContent = '0%'; }
+
+  pushSnapshot(); // allow undo
+
   const reader = new FileReader();
+  reader.onprogress = (e) => {
+    if (e.lengthComputable && progBar) {
+      const p = Math.round((e.loaded / e.total) * 100);
+      progBar.value = p;
+      if (progText) progText.textContent = p + '%';
+    }
+  };
   reader.onload = () => {
     try {
       const imported = JSON.parse(reader.result);
-      if (!imported || typeof imported !== 'object') throw new Error('Invalid JSON');
-      if (!Array.isArray(imported.data) || !Array.isArray(imported.frontPageWidgets)) {
-        throw new Error('The import file must contain a valid data structure.');
+      if (typeof validateImport === 'function') {
+        const result = validateImport(imported);
+        if (!result.valid) throw new Error(result.errors.join('; '));
+      } else {
+        if (!imported || typeof imported !== 'object') throw new Error('Invalid JSON');
+        if (!Array.isArray(imported.data) || !Array.isArray(imported.frontPageWidgets)) {
+          throw new Error('The import file must contain a valid data structure.');
+        }
       }
-      if (!confirm('Importing data will replace your current workspace and lists. Continue?')) return;
+      if (!confirm('Importing data will replace your current workspace and lists. Continue?')) { if (progWrap) progWrap.style.display = 'none'; return; }
+
       data = imported.data.map(normalizeCategory);
       frontPageWidgets = imported.frontPageWidgets.map(widget => normalizeWidget(widget));
       activeIdx = null;
@@ -303,14 +329,85 @@ function handleImportDataFile(files) {
       storage.set('devos_horizon_v7', data);
       storage.set('devos_front_geo_v7', frontPageWidgets);
       render();
-      alert('Data imported successfully.');
+      showToast('success', 'Data imported successfully.');
     } catch (error) {
       console.error(error);
-      alert('Unable to import data. Please check the JSON file and try again.');
+      showToast('error', 'Unable to import data: ' + (error.message || error));
+    } finally {
+      if (progWrap) { setTimeout(() => { progWrap.style.display = 'none'; if (progBar) progBar.value = 0; if (progText) progText.textContent = ''; }, 500); }
     }
   };
+  reader.onerror = () => { showToast('error','Unable to read file.'); if (progWrap) progWrap.style.display = 'none'; };
   reader.readAsText(file);
 }
+
+// --- Import UX helpers: toast, snapshots, drag/drop, undo ---
+function showToast(type, message, timeout = 3500) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.style.position = 'fixed';
+    container.style.right = '16px';
+    container.style.top = '16px';
+    container.style.zIndex = 9999;
+    document.body.appendChild(container);
+  }
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type || 'info');
+  el.textContent = message;
+  el.style.margin = '6px 0';
+  el.style.padding = '10px 14px';
+  el.style.borderRadius = '6px';
+  el.style.boxShadow = '0 6px 14px rgba(0,0,0,0.08)';
+  el.style.color = '#fff';
+  el.style.fontSize = '13px';
+  el.style.opacity = '1';
+  if (type === 'success') el.style.background = '#10b981';
+  else if (type === 'error') el.style.background = '#ef4444';
+  else el.style.background = 'rgba(30,41,59,0.9)';
+  container.appendChild(el);
+  setTimeout(() => { el.style.transition = 'opacity 0.3s ease'; el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, timeout);
+}
+
+function pushSnapshot() {
+  window._snapshots = window._snapshots || [];
+  try {
+    const snap = { data: JSON.parse(JSON.stringify(data || [])), frontPageWidgets: JSON.parse(JSON.stringify(frontPageWidgets || [])) };
+    window._snapshots.push(snap);
+    if (window._snapshots.length > 20) window._snapshots.shift();
+    const btn = document.getElementById('undo-import-btn'); if (btn) btn.disabled = false;
+  } catch (e) { console.error('Snapshot failed', e); }
+}
+
+function undoLastChange() {
+  window._snapshots = window._snapshots || [];
+  if (!window._snapshots.length) { showToast('error','Nothing to undo'); return; }
+  const snap = window._snapshots.pop();
+  data = snap.data || [];
+  frontPageWidgets = snap.frontPageWidgets || [];
+  storage.set('devos_horizon_v7', data);
+  storage.set('devos_front_geo_v7', frontPageWidgets);
+  render();
+  showToast('success','Undo successful');
+  const btn = document.getElementById('undo-import-btn'); if (btn && !window._snapshots.length) btn.disabled = true;
+}
+
+function setupImportDropZone() {
+  const zone = document.getElementById('import-drop-zone');
+  if (!zone) return;
+  ['dragenter','dragover','dragleave','drop'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); }));
+  zone.addEventListener('drop', e => {
+    const dt = e.dataTransfer; if (dt && dt.files) handleImportDataFile(dt.files);
+  });
+  zone.addEventListener('click', () => triggerImportData());
+  zone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); triggerImportData(); } });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setupImportDropZone();
+  const undoBtn = document.getElementById('undo-import-btn'); if (undoBtn) undoBtn.disabled = !(window._snapshots && window._snapshots.length);
+});
 
 // Subcategory Helpers
 function addSubcategory() {

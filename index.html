@@ -88,9 +88,17 @@
           <details class="tool-section" style="margin-bottom:12px;">
             <summary><i class="fas fa-database"></i> transfer data</summary>
             <div class="tool-panel" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
-              <button class="workspace-btn" onclick="exportAppData()">Export JSON</button>
-              <button class="workspace-btn secondary-btn" onclick="triggerImportData()">Import JSON</button>
-              <input id="import-data-file" type="file" accept="application/json" onchange="handleImportDataFile(this.files)" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
+              <div id="import-drop-zone" tabindex="0" role="button" aria-label="Drop JSON file to import" style="border:2px dashed rgba(0,0,0,0.08); padding:10px; border-radius:6px; background:transparent; color:var(--fg);">Drop a JSON export here to import, or use the buttons below.</div>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <button class="workspace-btn" onclick="exportAppData()" aria-label="Export JSON">Export JSON</button>
+                <button class="workspace-btn secondary-btn" onclick="triggerImportData()" aria-label="Import JSON">Import JSON</button>
+                <button class="workspace-btn" id="undo-import-btn" onclick="undoLastChange()" aria-label="Undo last change" title="Undo last change">Undo</button>
+              </div>
+              <input id="import-data-file" type="file" accept="application/json" onchange="handleImportDataFile(this.files)" aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
+              <div id="import-progress" style="display:none; margin-top:8px; align-items:center; gap:8px;">
+                <progress id="import-progress-bar" value="0" max="100" style="width:160px; height:12px;"></progress>
+                <span id="import-progress-text" style="font-size:12px; color:var(--fg);"></span>
+              </div>
             </div>
           </details>
 
@@ -105,12 +113,13 @@
     <script src="js/core/state.js"></script>
     <script src="js/core/interface.js"></script>
     <script src="js/core/timers.js"></script>
-    <script src="js/render/render-engine.js"></script>
-    <script src="js/render/inspector.js"></script>
-    <script src="js/widgets/widget-content.js"></script>
-    <script src="js/interaction/drag-and-resize.js"></script>
-    <script src="js/actions/state-changers.js"></script>
-    <script src="js/core/start.js"></script>
+    <script src="js/render/render-engine.js" defer></script>
+    <script src="js/render/inspector.js" defer></script>
+    <script src="js/widgets/widget-content.js" defer></script>
+    <script src="js/interaction/drag-and-resize.js" defer></script>
+    <script src="js/utils/import-utils.js" defer></script>
+    <script src="js/actions/state-changers.js" defer></script>
+    <script src="js/core/start.js" defer></script>
   </body>
 
 </html>
