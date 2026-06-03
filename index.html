@@ -90,7 +90,7 @@
             <div class="tool-panel" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;">
               <button class="workspace-btn" onclick="exportAppData()">Export JSON</button>
               <button class="workspace-btn secondary-btn" onclick="triggerImportData()">Import JSON</button>
-              <input id="import-data-file" type="file" accept="application/json" onchange="handleImportDataFile(this.files)" style="display:none">
+              <input id="import-data-file" type="file" accept="application/json" onchange="handleImportDataFile(this.files)" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;">
             </div>
           </details>
 
