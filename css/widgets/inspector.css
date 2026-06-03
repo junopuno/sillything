@@ -8,6 +8,9 @@
   gap: 10px;
   font-size: 0.75rem;
   color: #1e293b;
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .inspector-close-row {
@@ -236,4 +239,22 @@
   height: 16px;
   cursor: pointer;
   accent-color: #7b2cbf;
+}
+
+/* Scrollbar styling for inspector */
+.design-inspector::-webkit-scrollbar {
+  width: 8px;
+}
+
+.design-inspector::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.design-inspector::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.design-inspector::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

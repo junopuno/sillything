@@ -65,6 +65,23 @@
   overflow-wrap: anywhere;
 }
 
+.widget-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.widget-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.widget-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.widget-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
 .widget.image-widget {
   background: transparent;
   border-color: transparent;

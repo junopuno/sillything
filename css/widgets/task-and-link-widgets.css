@@ -9,8 +9,10 @@
 
 .task-main-line {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
+  flex-wrap: wrap;
+  word-break: break-word;
 }
 
 .task-main-line input[type="checkbox"] {
@@ -79,8 +81,9 @@
 
 .link-anchor-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 8px;
   background: rgba(0, 0, 0, 0.02);
   padding: 6px 10px;
   border-radius: 6px;
@@ -88,5 +91,8 @@
   text-decoration: none;
   color: var(--ui-accent);
   border: 1px solid rgba(0, 0, 0, 0.05);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
