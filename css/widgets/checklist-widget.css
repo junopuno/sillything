@@ -3,6 +3,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  overflow-wrap: break-word;
+
 }
 
 .checklist-row {
@@ -13,6 +15,8 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.03);
   flex-wrap: wrap;
   word-break: break-word;
+  height: fit-content;
+  
 }
 
 .checklist-row input[type="checkbox"] {
@@ -20,6 +24,9 @@
   width: 14px;
   height: 14px;
   cursor: pointer;
+  margin:auto;
+  overflow-wrap: break-word;
+  
 }
 
 .checklist-text {
@@ -29,14 +36,17 @@
   background: transparent;
   color: inherit;
   white-space: normal;
-  word-break: break-word;
   overflow-wrap: break-word;
+  overflow-y: scroll;
   line-height: 1.4;
+
+  
+
 }
 
 .checklist-text:focus {
   outline: none;
-  border-bottom: 1px solid #cbd5e1;
+  border-bottom: 1px solid #7495be;
 }
 
 .checklist-row .item-del-btn {
@@ -46,6 +56,7 @@
   opacity: 0;
   cursor: pointer;
   font-size: 0.75rem;
+  margin:auto;
 }
 
 .checklist-row:hover .item-del-btn {

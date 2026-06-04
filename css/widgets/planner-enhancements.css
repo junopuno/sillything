@@ -545,7 +545,7 @@
   flex: 1;
   min-height: 100%;
   border-radius: 10px;
-  background: #e2e8f0 center / cover no-repeat;
+  background: #e2e8f0;
   overflow: hidden;
 }
 
@@ -573,7 +573,7 @@
   border: 1px dashed rgba(100, 116, 139, 0.9);
   border-radius: 10px;
   color: #475569;
-  background: rgba(255, 255, 255, 0.82);
+  background: rgb(255, 255, 255);
   cursor: pointer;
   text-align: center;
   font-weight: 800;
@@ -582,6 +582,8 @@
 
 .image-cover-upload input {
   display: none;
+  background: white;
+
 }
 
 .image-cover-url {
@@ -590,6 +592,9 @@
   right: 12px;
   bottom: 12px;
   transition: 0.2s ease;
+  background: rgba(255, 255, 255, 0.82);
+  width:70%;
+  margin:auto
 }
 
 .image-cover-clear {
@@ -608,10 +613,12 @@
 .widget:has(.image-cover-widget) .widget-body {
   padding: 0;
   gap: 0;
+  background: transparent;
 }
 
 .widget:has(.image-cover-widget) .image-cover-widget {
   border-radius: 0;
+  background:transparent;
 }
 
 .youtube-fallback-link {

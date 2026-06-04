@@ -14,31 +14,33 @@
 
 .widget-header {
   padding: 14px 18px;
-  margin-bottom: 1px;
-  border-bottom: 1px solid rgba(255, 111, 201, 0.18);
+  padding-bottom:10px;
+ 
   cursor: grab;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  color: #6c3a78;
+  color: #a503d6f4;
+  height: 90px;
 }
 
 .widget-header input {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px dashed rgba(255, 111, 201, 0.35);
-  font-weight: 700;
+ 
+  
+  font-weight: 600;
   text-transform: uppercase;
   font-family: inherit;
   width: 65%;
+  height:100%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   color: inherit;
-  padding: 14px 18px;
-  border-radius: 14px;
+  margin-bottom: 4px;
+
 }
 
 .widget-header input:focus {
@@ -152,7 +154,7 @@
   padding: 12px 14px;
   border: 1px solid rgba(255, 111, 201, 0.32);
   border-radius: 18px;
-  background: rgba(255,255,255,0.95);
+  background: transparent;
   color: inherit;
 }
 
@@ -168,6 +170,7 @@
 
 .image-cover-widget.has-image:hover .image-actions {
   opacity: 1;
+  
 }
 
 .image-action-btn {
@@ -181,6 +184,10 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+.image-action-btn.image-action-delete {
+  background: rgba(239, 68, 68, 0.95);
 }
 
 .image-action-btn input[type="file"] {

@@ -270,6 +270,7 @@ function renderImageCover(w, i) {
           <input type="file" accept="image/*" onchange="setImageCoverFile(${i}, this.files[0])">
         </label>
         <input class="image-cover-url" type="url" value="${escapeHtml(w.imageSrc?.startsWith('data:') ? '' : (w.imageSrc || ''))}" placeholder="Or paste image URL" onchange="setImageCoverUrl(${i}, this.value)">
+        <button class="image-action-btn image-action-delete" onclick="delWid(${i})"><i class="fas fa-trash"></i> Delete widget</button>
       </div>`;
   }
 
@@ -283,6 +284,7 @@ function renderImageCover(w, i) {
           <input type="file" accept="image/*" onchange="setImageCoverFile(${i}, this.files[0])">
         </label>
         <button class="image-action-btn" onclick="clearImageCover(${i})"><i class="fas fa-trash"></i> Clear</button>
+        <button class="image-action-btn image-action-delete" onclick="delWid(${i})"><i class="fas fa-trash"></i> Delete</button>
       </div>
     </div>`;
 }
