@@ -283,8 +283,7 @@ function renderImageCover(w, i) {
           Replace
           <input type="file" accept="image/*" onchange="setImageCoverFile(${i}, this.files[0])">
         </label>
-        <button class="image-action-btn" onclick="clearImageCover(${i})"><i class="fas fa-trash"></i> Clear</button>
-        <button class="image-action-btn image-action-delete" onclick="delWid(${i})"><i class="fas fa-trash"></i> Delete</button>
+          <button class="image-action-btn" onclick="clearImageCover(${i})"><i class="fas fa-trash"></i> Clear</button>
       </div>
     </div>`;
 }
