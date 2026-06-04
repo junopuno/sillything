@@ -29,8 +29,8 @@ function initPhysics() {
       },
       end(event) {
         event.target.style.zIndex = "";
-        storage.set('devos_horizon_v7', data);
-        storage.set('devos_front_geo_v7', frontPageWidgets);
+        storage.set('_horizon_v7', data);
+        storage.set('alvis_front_geo', frontPageWidgets);
       }
     }
   }).resizable({
@@ -69,7 +69,7 @@ function initPhysics() {
       },
       end() {
         setTimeout(() => categoryDragMoved = false, 100);
-        storage.set('devos_horizon_v7', data);
+        storage.set('_horizon_v7', data);
       }
     }
   });

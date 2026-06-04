@@ -164,7 +164,7 @@ function updateCategoryName(value, shouldRender = true) {
   else {
     document.getElementById('category-title-banner').innerText = data[activeIdx].name;
     document.getElementById('category-index').innerText = data[activeIdx].name;
-    storage.set('devos_horizon_v7', data);
+    storage.set('_horizon_v7', data);
   }
 }
 
@@ -354,8 +354,8 @@ function handleImportDataFile(files) {
       frontPageWidgets = imported.frontPageWidgets.map(widget => normalizeWidget(widget));
       activeIdx = null;
       activeSubId = null;
-      storage.set('devos_horizon_v7', data);
-      storage.set('devos_front_geo_v7', frontPageWidgets);
+      storage.set('_horizon_v7', data);
+      storage.set('alvis_front_geo', frontPageWidgets);
       render();
       showToast('success', 'Data imported successfully.');
     } catch (error) {
@@ -414,8 +414,8 @@ function undoLastChange() {
   const snap = window._snapshots.pop();
   data = snap.data || [];
   frontPageWidgets = snap.frontPageWidgets || [];
-  storage.set('devos_horizon_v7', data);
-  storage.set('devos_front_geo_v7', frontPageWidgets);
+  storage.set('_horizon_v7', data);
+  storage.set('alvis_front_geo', frontPageWidgets);
   render();
   showToast('success','Undo successful');
   const btn = document.getElementById('undo-import-btn'); if (btn && !window._snapshots.length) btn.disabled = true;
@@ -505,13 +505,13 @@ function updateTaskSub(wi, ti, prop, val) {
   task[prop] = val;
   if (prop === 'status') task.done = val === 'done';
   if (prop === 'done') task.status = val ? 'done' : 'todo';
-  storage.set('devos_horizon_v7', data);
+  storage.set('_horizon_v7', data);
 }
 
 // Checklist Helpers
 function addCheckItem(wi) { data[activeIdx].widgets[wi].checkItems.push({ text: 'New item', done: false }); render(); }
 function toggleCheckItem(wi, ci) { data[activeIdx].widgets[wi].checkItems[ci].done = !data[activeIdx].widgets[wi].checkItems[ci].done; render(); }
-function updateCheckItemText(wi, ci, val) { data[activeIdx].widgets[wi].checkItems[ci].text = val; storage.set('devos_horizon_v7', data); }
+function updateCheckItemText(wi, ci, val) { data[activeIdx].widgets[wi].checkItems[ci].text = val; storage.set('_horizon_v7', data); }
 function deleteCheckItem(wi, ci) { data[activeIdx].widgets[wi].checkItems.splice(ci, 1); render(); }
 
 // Link Helpers
@@ -549,13 +549,13 @@ function updateCategoryBg(color, shouldRender = true) {
   data[activeIdx].bgColor = color;
   document.documentElement.style.setProperty('--page-bg', color);
   if (shouldRender) render();
-  else storage.set('devos_horizon_v7', data);
+  else storage.set('_horizon_v7', data);
 }
 
 // Hourly Schedule Helpers
 function addScheduleRow(wi) { data[activeIdx].widgets[wi].schedItems.push({ hour: '12:00', task: '' }); render(); }
-function updateScheduleHour(wi, ri, val) { data[activeIdx].widgets[wi].schedItems[ri].hour = val; storage.set('devos_horizon_v7', data); }
-function updateScheduleTask(wi, ri, val) { data[activeIdx].widgets[wi].schedItems[ri].task = val; storage.set('devos_horizon_v7', data); }
+function updateScheduleHour(wi, ri, val) { data[activeIdx].widgets[wi].schedItems[ri].hour = val; storage.set('_horizon_v7', data); }
+function updateScheduleTask(wi, ri, val) { data[activeIdx].widgets[wi].schedItems[ri].task = val; storage.set('_horizon_v7', data); }
 function deleteScheduleRow(wi, ri) { data[activeIdx].widgets[wi].schedItems.splice(ri, 1); render(); }
 
 // Habit Helpers
@@ -566,7 +566,7 @@ function addHabit(wi) {
 
 function updateHabitName(wi, hi, value) {
   data[activeIdx].widgets[wi].habits[hi].name = value;
-  storage.set('devos_horizon_v7', data);
+  storage.set('_horizon_v7', data);
 }
 
 function toggleHabitDay(wi, hi, di) {

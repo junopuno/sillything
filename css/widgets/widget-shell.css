@@ -14,6 +14,7 @@
 
 .widget-header {
   padding: 14px 18px;
+  margin-bottom: 1px;
   border-bottom: 1px solid rgba(255, 111, 201, 0.18);
   cursor: grab;
   display: flex;
@@ -36,7 +37,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   color: inherit;
-  padding: 8px 10px;
+  padding: 14px 18px;
   border-radius: 14px;
 }
 

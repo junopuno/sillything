@@ -318,5 +318,5 @@ function render() {
     if (openEl) openEl.classList.remove('hidden');
   }
 
-  storage.set('devos_horizon_v7', data);
+  storage.set('_horizon_v7', data);
 }

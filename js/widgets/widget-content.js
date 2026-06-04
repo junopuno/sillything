@@ -122,6 +122,7 @@ function renderClock(w, i) {
     minute: '2-digit',
     second: w.clockShowSeconds ? '2-digit' : undefined,
     hour12: w.clockFormat === '12'
+    
   });
 
   return `

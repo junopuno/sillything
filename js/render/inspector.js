@@ -134,7 +134,7 @@ function mutateStyle(scope, ref, property, value, shouldRender = true) {
   if (scope === 'front') {
     let w = frontPageWidgets.find(item => item.id === ref);
     if (w) w.style[property] = value;
-    storage.set('devos_front_geo_v7', frontPageWidgets);
+    storage.set('alvis_front_geo', frontPageWidgets);
   } else {
     data[activeIdx].widgets[ref].style[property] = value;
   }
@@ -178,7 +178,7 @@ function applyWidgetPreset(scope, ref, presetId) {
   if (scope === 'front') {
     let w = frontPageWidgets.find(item => item.id === ref);
     if (w) w.style = JSON.parse(JSON.stringify(preset.style));
-    storage.set('devos_front_geo_v7', frontPageWidgets);
+    storage.set('alvis_front_geo', frontPageWidgets);
   } else {
     data[activeIdx].widgets[ref].style = JSON.parse(JSON.stringify(preset.style));
   }
@@ -207,6 +207,6 @@ function saveWidgetPreset(scope, ref) {
   };
   
   widgetPresets.push(newPreset);
-  storage.set('devos_widget_presets_v7', widgetPresets);
+  storage.set('alvis_widget_presets', widgetPresets);
   render();
 }

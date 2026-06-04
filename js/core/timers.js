@@ -6,13 +6,13 @@ function runGlobalTickingSystems() {
 
   // Dynamic Greeting
   let currentGreeting = "Good Night";
-  if (hrs >= 5 && hrs < 12) currentGreeting = "Good Morning";
-  else if (hrs >= 12 && hrs < 17) currentGreeting = "Good Afternoon";
-  else if (hrs >= 17 && hrs < 22) currentGreeting = "Good Evening";
+  if (hrs >= 5 && hrs < 12) currentGreeting = "wake the fuck up you lazy shit";
+  else if (hrs >= 12 && hrs < 17) currentGreeting = "i hope u got smth done today idiot";
+  else if (hrs >= 17 && hrs < 22) currentGreeting = "do u even deserve sleep??";
 
   const greetingText = document.getElementById('greeting-text');
   if (greetingText && activeIdx === null) {
-    greetingText.innerHTML = `${currentGreeting}, Alva<span class="dot">.</span>`;
+    greetingText.innerHTML = `${currentGreeting}>`;
   }
 
   // Live Clocks
