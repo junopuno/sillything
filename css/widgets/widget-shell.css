@@ -88,6 +88,7 @@
 .widget.image-widget {
   background: transparent;
   border-color: transparent;
+  border-width: 0;
   box-shadow: none;
 }
 
@@ -98,6 +99,47 @@
 .widget.image-widget .widget-body {
   padding: 0;
   background: transparent;
+}
+
+.image-widget-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.widget.image-widget:hover .image-widget-controls,
+.widget.image-widget:focus-within .image-widget-controls {
+  opacity: 1;
+}
+
+.image-widget-controls button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
+}
+
+.image-widget-controls button:hover {
+  background: rgba(15, 23, 42, 0.88);
+}
+
+.image-widget-controls .danger-icon {
+  background: rgba(239, 68, 68, 0.85);
+}
+
+.image-widget-controls .danger-icon:hover {
+  background: rgba(220, 38, 38, 0.95);
 }
 
 .image-cover-widget {
@@ -117,6 +159,8 @@
   height: 100%;
   object-fit: contain;
   display: block;
+  border: 0;
+  outline: 0;
   background: transparent;
   image-rendering: -webkit-optimize-contrast;
 }
@@ -193,4 +237,3 @@
 .image-action-btn input[type="file"] {
   display: none;
 }
-

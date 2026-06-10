@@ -57,12 +57,7 @@ function renderInspectorMarkup(scope, targetRef, style) {
       </div>
       <div class="inspector-control">
         <label>Header Font Size</label>
-        <select onchange="mutateStyle('${scope}','${targetRef}','headerFontSz',this.value)">
-          <option value="12px" ${normalizedStyle.headerFontSz === '12px' ? 'selected' : ''}>Small (12px)</option>
-          <option value="14px" ${normalizedStyle.headerFontSz === '14px' ? 'selected' : ''}>Medium (14px)</option>
-          <option value="16px" ${normalizedStyle.headerFontSz === '16px' ? 'selected' : ''}>Large (16px)</option>
-          <option value="18px" ${normalizedStyle.headerFontSz === '18px' ? 'selected' : ''}>XL (18px)</option>
-        </select>
+        <input type="text" value="${escapeHtml(normalizedStyle.headerFontSz)}" placeholder="e.g., 16px, 1.25rem" onchange="mutateStyle('${scope}','${targetRef}','headerFontSz',this.value)">
       </div>
       <div class="inspector-control">
         <label>Header Font</label>
@@ -88,12 +83,7 @@ function renderInspectorMarkup(scope, targetRef, style) {
       <h4>Body</h4>
       <div class="inspector-control">
         <label>Body Font Size</label>
-        <select onchange="mutateStyle('${scope}','${targetRef}','fontSz',this.value)">
-          <option value="12px" ${normalizedStyle.fontSz === '12px' ? 'selected' : ''}>Small (12px)</option>
-          <option value="14px" ${normalizedStyle.fontSz === '14px' ? 'selected' : ''}>Medium (14px)</option>
-          <option value="16px" ${normalizedStyle.fontSz === '16px' ? 'selected' : ''}>Large (16px)</option>
-          <option value="18px" ${normalizedStyle.fontSz === '18px' ? 'selected' : ''}>XL (18px)</option>
-        </select>
+        <input type="text" value="${escapeHtml(normalizedStyle.fontSz)}" placeholder="e.g., 14px, 1rem" onchange="mutateStyle('${scope}','${targetRef}','fontSz',this.value)">
       </div>
       <div class="inspector-control">
         <label>Body Padding</label>
@@ -131,6 +121,10 @@ function closeInspector(scope, ref) {
 }
 
 function mutateStyle(scope, ref, property, value, shouldRender = true) {
+  if (property === 'fontSz' || property === 'headerFontSz') {
+    value = normalizeCssSize(value, property === 'fontSz' ? '14px' : '16px');
+  }
+
   if (scope === 'front') {
     let w = frontPageWidgets.find(item => item.id === ref);
     if (w) w.style[property] = value;

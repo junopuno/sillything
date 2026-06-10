@@ -9,6 +9,13 @@ function escapeHtml(value = '') {
     .replaceAll("'", '&#039;');
 }
 
+function normalizeCssSize(value, fallback = '14px') {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return fallback;
+  if (/^-?\d+(\.\d+)?$/.test(trimmed)) return `${trimmed}px`;
+  return trimmed;
+}
+
 function getWidgetStyleString(style) {
   const s = { ...createDefaultStyle(), ...style };
   return `background:${s.bodyBg}; color:${s.textCol}; border-color:${s.borderCol}; border-width:${s.borderWidth}; border-radius:${s.cornerRadius}`;
@@ -16,12 +23,12 @@ function getWidgetStyleString(style) {
 
 function getWidgetHeaderStyleString(style) {
   const s = { ...createDefaultStyle(), ...style };
-  return `background:${s.headBg}; color:${s.headerTextCol}; font-size:${s.headerFontSz}; font-family:${s.headerFont}; padding:${s.headerPadding}; border-bottom:${s.headerBorderBottom}; height:${s.headerHeight}; display:${s.showHeader ? 'flex' : 'none'}`;
+  return `background:${s.headBg}; color:${s.headerTextCol}; font-size:${normalizeCssSize(s.headerFontSz, '16px')}; font-family:${s.headerFont}; padding:${s.headerPadding}; border-bottom:${s.headerBorderBottom}; height:${s.headerHeight}; display:${s.showHeader ? 'flex' : 'none'}`;
 }
 
 function getWidgetBodyStyleString(style) {
   const s = { ...createDefaultStyle(), ...style };
-  return `font-size:${s.fontSz}; padding:${s.bodyPadding}`;
+  return `font-size:${normalizeCssSize(s.fontSz, '14px')}; padding:${s.bodyPadding}`;
 }
 
 function getAllTasks() {
@@ -93,6 +100,85 @@ function renderWidgetSectionMenu(category, widgetIndex, widget) {
           </button>`).join('')}
       </div>
     </details>`;
+}
+
+function extractYoutubeVideoIdFromWidget(widget) {
+  return parseYoutubeVideoId(widget?.youtubeUrl || widget?.embedUrl || '');
+}
+
+function hydratePreservedYoutubeWidget(existingWidget, desiredWidget, widgetData) {
+  existingWidget.setAttribute('class', desiredWidget.getAttribute('class') || 'widget');
+  existingWidget.setAttribute('style', desiredWidget.getAttribute('style') || '');
+  existingWidget.dataset.x = desiredWidget.dataset.x;
+  existingWidget.dataset.y = desiredWidget.dataset.y;
+
+  const desiredHeader = desiredWidget.querySelector('.widget-header');
+  const existingHeader = existingWidget.querySelector('.widget-header');
+  if (desiredHeader && existingHeader) existingHeader.innerHTML = desiredHeader.innerHTML;
+
+  const desiredInspector = desiredWidget.querySelector('.design-inspector');
+  const existingInspector = existingWidget.querySelector('.design-inspector');
+  if (desiredInspector && existingInspector) {
+    existingInspector.innerHTML = desiredInspector.innerHTML;
+    existingInspector.className = desiredInspector.className;
+  }
+
+  const desiredBody = desiredWidget.querySelector('.widget-body');
+  const existingBody = existingWidget.querySelector('.widget-body');
+  if (desiredBody && existingBody) {
+    existingBody.setAttribute('style', desiredBody.getAttribute('style') || '');
+    const input = existingBody.querySelector('input[type="url"]');
+    if (input) input.value = widgetData.youtubeUrl || widgetData.embedUrl || '';
+    const fallbackLink = existingBody.querySelector('.youtube-fallback-link');
+    const videoId = extractYoutubeVideoIdFromWidget(widgetData);
+    if (fallbackLink && videoId) fallbackLink.href = `https://www.youtube.com/watch?v=${videoId}`;
+  }
+
+  return existingWidget;
+}
+
+function setCanvasHtmlPreservingYoutube(canvas, html, category) {
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  const desiredChildren = Array.from(template.content.childNodes);
+  const preservedYoutubeWidgets = new Map();
+
+  desiredChildren.forEach(node => {
+    if (!(node instanceof HTMLElement) || !node.matches('.widget[data-index]')) return;
+
+    const index = Number(node.dataset.index);
+    const widgetData = category.widgets[index];
+    if (widgetData?.type !== 'youtube') return;
+
+    const existingWidget = canvas.querySelector(`.widget[data-index="${index}"]`);
+    const existingFrame = existingWidget?.querySelector('.youtube-frame');
+    const desiredVideoId = extractYoutubeVideoIdFromWidget(widgetData);
+    if (!existingWidget || !existingFrame || !desiredVideoId || existingFrame.dataset.videoId !== desiredVideoId) return;
+
+    hydratePreservedYoutubeWidget(existingWidget, node, widgetData);
+    preservedYoutubeWidgets.set(String(index), existingWidget);
+  });
+
+  Array.from(canvas.childNodes).forEach(node => {
+    if (node instanceof HTMLElement && node.matches('.widget[data-index]')) {
+      const preservedWidget = preservedYoutubeWidgets.get(node.dataset.index);
+      if (preservedWidget === node) return;
+    }
+    node.remove();
+  });
+
+  let cursor = canvas.firstChild;
+  desiredChildren.forEach(node => {
+    if (node instanceof HTMLElement && node.matches('.widget[data-index]')) {
+      const preservedWidget = preservedYoutubeWidgets.get(node.dataset.index);
+      if (preservedWidget) {
+        cursor = preservedWidget.nextSibling;
+        return;
+      }
+    }
+
+    canvas.insertBefore(node, cursor);
+  });
 }
 
 function renderTodayPanel() {
@@ -281,9 +367,13 @@ function render() {
       .map((widget, index) => ({ widget, index }))
       .filter(item => activeSubId === null || (activeSubId === 'uncategorized' ? !item.widget.subcategoryId : item.widget.subcategoryId === activeSubId));
 
-    canvas.innerHTML = renderSubcategoryTabs(category) + visibleWidgets.map(({ widget: w, index: i }) => {
+    const categoryHtml = renderSubcategoryTabs(category) + visibleWidgets.map(({ widget: w, index: i }) => {
       const widgetClass = w.type === 'image' ? 'widget image-widget' : 'widget';
-      const bgColor = w.type === 'image' ? 'transparent' : w.style.bodyBg;
+      const isImageWidget = w.type === 'image';
+      const hasImage = isImageWidget && Boolean(w.imageSrc);
+      const bgColor = isImageWidget ? 'transparent' : w.style.bodyBg;
+      const borderColor = isImageWidget && hasImage ? 'transparent' : w.style.borderCol;
+      const borderWidth = isImageWidget && hasImage ? '0px' : w.style.borderWidth;
       const headerHtml = w.type === 'image' ? '' : `
           <div class="widget-header" style="${getWidgetHeaderStyleString(w.style)}">
               <input type="text" value="${escapeHtml(w.title)}" onchange="updateWidgetProp(${i}, 'title', this.value)">
@@ -294,17 +384,25 @@ function render() {
                   <i class="fas fa-times" onclick="delWid(${i})" style="color:#ef4444;"></i>
               </div>
           </div>`;
+      const imageControlsHtml = w.type === 'image' ? `
+          <div class="image-widget-controls">
+              <button type="button" title="Customize" onclick="openInspector('cat', ${i})"><i class="fas fa-ellipsis-v"></i></button>
+              <button type="button" title="Duplicate" onclick="duplicateWidget(${i})"><i class="fas fa-copy"></i></button>
+              <button type="button" title="Delete" class="danger-icon" onclick="delWid(${i})"><i class="fas fa-times"></i></button>
+          </div>` : '';
 
-      const widgetStyle = `transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${bgColor}; color:${w.style.textCol}; border-color:${w.style.borderCol}; border-width:${w.style.borderWidth}; border-radius:${w.style.cornerRadius}`;
+      const widgetStyle = `transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${bgColor}; color:${w.style.textCol}; border-color:${borderColor}; border-width:${borderWidth}; border-radius:${w.style.cornerRadius}`;
       
       return `
       <div class="${widgetClass}" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" 
            style="${widgetStyle}">
           ${headerHtml}
+          ${imageControlsHtml}
           <div id="inspect-cat-${i}" class="design-inspector hidden">${renderInspectorMarkup('cat', i, w.style)}</div>
           <div class="widget-body" style="${getWidgetBodyStyleString(w.style)}">${renderWidgetBody(w, i)}</div>
       </div>`;
     }).join('');
+    setCanvasHtmlPreservingYoutube(canvas, categoryHtml, category);
   }
 
   initPhysics();

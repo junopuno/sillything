@@ -124,7 +124,11 @@ function goHome() {
   updateMenuActiveStates();
 }
 function delWid(i) { data[activeIdx].widgets.splice(i, 1); render(); }
-function updateWidgetProp(wi, prop, val) { data[activeIdx].widgets[wi][prop] = val; render(); }
+function updateWidgetProp(wi, prop, val) {
+  if (prop === 'clockFontSize') val = normalizeCssSize(val, '2.2rem');
+  data[activeIdx].widgets[wi][prop] = val;
+  render();
+}
 function appendCalculatorToken(wi, token) {
   let w = data[activeIdx].widgets[wi];
   w.calcInput = `${w.calcInput || ''}${token}`;

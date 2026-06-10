@@ -117,6 +117,7 @@ function renderCountdown(w, i) {
 }
 
 function renderClock(w, i) {
+  const clockFontSize = normalizeCssSize(w.clockFontSize, '2.2rem');
   const clockText = new Date().toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
@@ -127,16 +128,11 @@ function renderClock(w, i) {
 
   return `
     <div class="time-widget-stack clock-widget">
-      <div id="clock-face-${i}" class="digital-clock-face live-clock-face" style="font-size:${escapeHtml(w.clockFontSize)}; font-family:${escapeHtml(w.clockFontFamily)}">${escapeHtml(clockText)}</div>
+      <div id="clock-face-${i}" class="digital-clock-face live-clock-face" style="font-size:${escapeHtml(clockFontSize)}; font-family:${escapeHtml(w.clockFontFamily)}">${escapeHtml(clockText)}</div>
       <div class="clock-options-grid">
         <label>
           Font size
-          <select onchange="updateWidgetProp(${i},'clockFontSize',this.value)">
-            <option value="1.6rem" ${w.clockFontSize === '1.6rem' ? 'selected' : ''}>Small</option>
-            <option value="2.2rem" ${w.clockFontSize === '2.2rem' ? 'selected' : ''}>Medium</option>
-            <option value="3rem" ${w.clockFontSize === '3rem' ? 'selected' : ''}>Large</option>
-            <option value="4rem" ${w.clockFontSize === '4rem' ? 'selected' : ''}>Huge</option>
-          </select>
+          <input type="text" value="${escapeHtml(clockFontSize)}" placeholder="e.g. 42px, 5rem" onchange="updateWidgetProp(${i},'clockFontSize',this.value)">
         </label>
         <label>
           Font
@@ -252,7 +248,7 @@ function renderYoutube(w, i) {
     <div class="youtube-widget">
       <input type="url" value="${escapeHtml(youtubeUrl)}" placeholder="Paste a YouTube link" onchange="updateWidgetProp(${i},'youtubeUrl',this.value)">
       ${embedUrl ? `
-        <iframe class="youtube-frame" src="${embedUrl}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+        <iframe class="youtube-frame" data-video-id="${escapeHtml(videoId)}" src="${embedUrl}" title="YouTube video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
         <a class="youtube-fallback-link" href="${watchUrl}" target="_blank" rel="noopener">Open on YouTube</a>
       ` : `
         <div class="embed-empty-state"><i class="fab fa-youtube"></i><span>Paste a YouTube link above</span></div>

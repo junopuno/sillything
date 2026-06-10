@@ -15,13 +15,15 @@ function runGlobalTickingSystems() {
     greetingText.innerHTML = `${currentGreeting}>`;
   }
 
-  // Live Clocks
-  if (activeIdx !== null) {
-    data[activeIdx].widgets.forEach((w, index) => {
+  let changedTimeState = false;
+
+  data.forEach((category, categoryIndex) => {
+    category.widgets.forEach((w, index) => {
+      const isVisibleCategory = activeIdx === categoryIndex;
       if (w.type === 'clock') {
-        const face = document.getElementById(`clock-face-${index}`);
+        const face = isVisibleCategory ? document.getElementById(`clock-face-${index}`) : null;
         if (face) {
-          face.style.fontSize = w.clockFontSize || '2.2rem';
+          face.style.fontSize = normalizeCssSize(w.clockFontSize, '2.2rem');
           face.style.fontFamily = w.clockFontFamily || 'Inter, sans-serif';
           face.innerText = formatClockFace(w);
         }
@@ -29,7 +31,7 @@ function runGlobalTickingSystems() {
 
       if (w.type === 'countdown' && w.deadline) {
         const distance = new Date(w.deadline).getTime() - new Date().getTime();
-        const face = document.getElementById(`count-face-${index}`);
+        const face = isVisibleCategory ? document.getElementById(`count-face-${index}`) : null;
         if (face) {
           if (distance < 0) { face.innerText = "TIME OUT"; }
           else {
@@ -43,17 +45,21 @@ function runGlobalTickingSystems() {
       }
       if (w.type === 'timer' && w.timerRunning) {
         w.timerElapsed += 1;
-        const face = document.getElementById(`timer-face-${index}`);
+        changedTimeState = true;
+        const face = isVisibleCategory ? document.getElementById(`timer-face-${index}`) : null;
         if (face) face.innerText = parseSecondsToTimerFace(w.timerElapsed);
       }
       if (w.type === 'pomodoro' && w.pomodoroRunning) {
         w.pomodoroSeconds = Math.max((w.pomodoroSeconds || 0) - 1, 0);
         if (w.pomodoroSeconds === 0) w.pomodoroRunning = false;
-        const face = document.getElementById(`pomodoro-face-${index}`);
+        changedTimeState = true;
+        const face = isVisibleCategory ? document.getElementById(`pomodoro-face-${index}`) : null;
         if (face) face.innerText = parseMinutesSeconds(w.pomodoroSeconds);
       }
     });
-  }
+  });
+
+  if (changedTimeState) storage.set('_horizon_v7', data);
 }
 setInterval(runGlobalTickingSystems, 1000);
 

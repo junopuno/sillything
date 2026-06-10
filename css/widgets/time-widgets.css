@@ -29,6 +29,7 @@
   color: #475569;
 }
 
+.clock-options-grid input,
 .clock-options-grid select,
 .clock-toggle-row input[type="checkbox"] {
   border: 1px solid #cbd5e1;
@@ -64,4 +65,3 @@
 .time-mini-btn:hover {
   background: #f1f5f9;
 }
-

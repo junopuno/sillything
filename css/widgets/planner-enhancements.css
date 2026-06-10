@@ -556,6 +556,17 @@
   pointer-events: none;
 }
 
+.image-cover-widget.has-image {
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+
+.image-cover-widget.has-image img {
+  border: 0;
+  outline: 0;
+}
+
 .image-cover-widget:hover .image-cover-upload,
 .image-cover-widget:hover .image-cover-url {
   opacity: 1;
@@ -619,6 +630,11 @@
 .widget:has(.image-cover-widget) .image-cover-widget {
   border-radius: 0;
   background:transparent;
+}
+
+.widget.image-widget:has(.image-cover-widget.has-image) {
+  border: 0;
+  box-shadow: none;
 }
 
 .youtube-fallback-link {
