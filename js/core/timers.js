@@ -54,8 +54,6 @@ function runGlobalTickingSystems() {
         w.pomodoroSeconds = Math.max((w.pomodoroSeconds || 0) - 1, 0);
         if (w.pomodoroSeconds === 0) w.pomodoroRunning = false;
         changedTimeState = true;
-        const face = isVisibleCategory ? document.getElementById(`pomodoro-face-${index}`) : null;
-        if (face) face.innerText = parseMinutesSeconds(w.pomodoroSeconds);
       }
     });
   });
