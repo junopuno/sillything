@@ -309,79 +309,6 @@ function renderMedia(w, i) {
     </div>`;
 }
 
-function renderCalculator(w, i) {
-  return `
-    <div class="calculator-widget">
-      <div class="calculator-display">
-        <input id="calc-input-${i}" type="text" value="${escapeHtml(w.calcInput || '')}" placeholder="0" onchange="updateWidgetProp(${i},'calcInput',this.value)">
-        <div class="calculator-result">${escapeHtml(w.calcResult || '') || '<span class="hint">Result appears here</span>'}</div>
-      </div>
-      <div class="calculator-keypad">
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'7')">7</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'8')">8</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'9')">9</button>
-        <button class="calc-btn operator" onclick="appendCalculatorToken(${i},'/')">÷</button>
-        <button class="calc-btn fn" onclick="appendCalculatorToken(${i},'sin(')">sin</button>
-
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'4')">4</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'5')">5</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'6')">6</button>
-        <button class="calc-btn operator" onclick="appendCalculatorToken(${i},'*')">×</button>
-        <button class="calc-btn fn" onclick="appendCalculatorToken(${i},'cos(')">cos</button>
-
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'1')">1</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'2')">2</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'3')">3</button>
-        <button class="calc-btn operator" onclick="appendCalculatorToken(${i},'-')">−</button>
-        <button class="calc-btn fn" onclick="appendCalculatorToken(${i},'tan(')">tan</button>
-
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'0')">0</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'.')">.</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'^')">^</button>
-        <button class="calc-btn operator" onclick="appendCalculatorToken(${i},'+')">+</button>
-        <button class="calc-btn fn" onclick="appendCalculatorToken(${i},'log(')">log</button>
-
-        <button class="calc-action-btn" onclick="deleteCalculatorChar(${i})">Del</button>
-        <button class="calc-action-btn" onclick="clearCalculator(${i})">C</button>
-        <button class="calc-action-btn wide" onclick="evaluateCalculator(${i})">=</button>
-      </div>
-    </div>`;
-}
-
-function renderGraphWidget(w, i) {
-  return `
-    <div class="graph-widget">
-      <div class="graph-toolbar">
-        <label>y = <input id="graph-input-${i}" type="text" value="${escapeHtml(w.graphExpr || '')}" placeholder="sin(x)" onchange="updateWidgetProp(${i},'graphExpr',this.value)" oninput="updateWidgetProp(${i},'graphExpr',this.value)"></label>
-        <div class="graph-buttons">
-          <button class="graph-btn" onclick="appendGraphToken(${i},'x')">x</button>
-          <button class="graph-btn" onclick="appendGraphToken(${i},'+')">+</button>
-          <button class="graph-btn" onclick="appendGraphToken(${i},'-')">−</button>
-          <button class="graph-btn" onclick="appendGraphToken(${i},'*')">×</button>
-          <button class="graph-btn" onclick="appendGraphToken(${i},'/')">÷</button>
-          <button class="graph-btn" onclick="appendGraphToken(${i},'^')">^</button>
-          <button class="graph-btn" onclick="appendGraphToken(${i},'(')">(</button>
-          <button class="graph-btn" onclick="appendGraphToken(${i},')')">)</button>
-          <button class="graph-btn" onclick="appendGraphToken(${i},'sin(')">sin</button>
-          <button class="graph-btn" onclick="appendGraphToken(${i},'cos(')">cos</button>
-          <button class="graph-btn" onclick="appendGraphToken(${i},'tan(')">tan</button>
-          <button class="graph-btn" onclick="appendGraphToken(${i},'log(')">log</button>
-          <button class="graph-action-btn" onclick="deleteGraphChar(${i})">Del</button>
-          <button class="graph-action-btn" onclick="clearGraphExpr(${i})">Clear</button>
-        </div>
-        <div class="graph-range-grid">
-          <label><span>x min</span><input type="number" step="0.5" value="${escapeHtml(w.graphXMin || '')}" onchange="updateWidgetProp(${i},'graphXMin',this.value)"></label>
-          <label><span>x max</span><input type="number" step="0.5" value="${escapeHtml(w.graphXMax || '')}" onchange="updateWidgetProp(${i},'graphXMax',this.value)"></label>
-          <label><span>y min</span><input type="number" step="0.5" value="${escapeHtml(w.graphYMin || '')}" onchange="updateWidgetProp(${i},'graphYMin',this.value)"></label>
-          <label><span>y max</span><input type="number" step="0.5" value="${escapeHtml(w.graphYMax || '')}" onchange="updateWidgetProp(${i},'graphYMax',this.value)"></label>
-        </div>
-      </div>
-      <div class="graph-frame">
-        <canvas id="graph-canvas-${i}" width="420" height="220"></canvas>
-        <div class="graph-feedback">${escapeHtml(w.graphError || '')}</div>
-      </div>
-    </div>`;
-}
 
 function parseYoutubeVideoId(url = '') {
   const cleanUrl = url.trim();
@@ -404,127 +331,364 @@ function parseYoutubeVideoId(url = '') {
     return '';
   }
 }
+/* --- AVANCERAD GRAFRITANDE MINIRÄKNARE-LOGIK --- */
 
-function evaluateCalculator(i) {
-  const widget = data?.[activeIdx]?.widgets?.[i];
-  if (!widget) return;
-  const expression = (widget.calcInput || '').trim();
-  if (!expression) {
-    updateWidgetProp(i, 'calcResult', 'Enter an expression');
-    return;
-  }
+// 1. UTÖKAD MINIRÄKNARE (Scientific / Multi-line Input)
+function renderCalculator(w, i) {
+  // Initiera internt tillstånd om det inte finns
+  if (w.calcExpression === undefined) w.calcExpression = '';
+  if (w.calcResult === undefined) w.calcResult = '0';
+  if (w.calcHistory === undefined) w.calcHistory = [];
 
-  try {
-    const result = Function(`with(Math){ return ${expression} }`)();
-    updateWidgetProp(i, 'calcResult', String(result));
-  } catch (error) {
-    updateWidgetProp(i, 'calcResult', `Error: ${error.message}`);
-  }
+  const historyHtml = w.calcHistory.map(h => `<div class="calc-hist-item">${escapeHtml(h)}</div>`).join('');
+
+  return `
+    <div class="adv-calc-container" style="display:flex; flex-direction:column; gap:8px; height:100%; padding:4px;">
+      <div class="calc-screen" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:12px; padding:10px; text-align:right; font-family:monospace; min-height:85px; display:flex; flex-direction:column; justify-content:end; box-shadow:inset 0 2px 4px rgba(0,0,0,0.05);">
+        <div class="calc-history-area" style="font-size:0.7rem; color:#64748b; max-height:40px; overflow-y:auto; margin-bottom:4px;">${historyHtml}</div>
+        <div class="calc-input-line" style="font-size:1.1rem; color:#0f172a; word-break:break-all; min-height:22px;">${escapeHtml(w.calcExpression || '0')}</div>
+        <div class="calc-result-line" style="font-weight:700; font-size:1.3rem; color:#2563eb; margin-top:2px;">${escapeHtml(w.calcResult)}</div>
+      </div>
+      
+      <div class="calc-keypad" style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; font-size:0.8rem;">
+        <button class="calc-btn fn" onclick="handleAdvCalcInput(${i}, 'sin(')" style="background:#e0e7ff; font-weight:bold;">sin</button>
+        <button class="calc-btn fn" onclick="handleAdvCalcInput(${i}, 'cos(')" style="background:#e0e7ff; font-weight:bold;">cos</button>
+        <button class="calc-btn fn" onclick="handleAdvCalcInput(${i}, 'tan(')" style="background:#e0e7ff; font-weight:bold;">tan</button>
+        <button class="calc-btn fn" onclick="handleAdvCalcInput(${i}, '^')" style="background:#e0e7ff; font-weight:bold;">^</button>
+        <button class="calc-btn danger" onclick="handleAdvCalcInput(${i}, 'CLEAR')" style="background:#fee2e2; color:#ef4444; font-weight:bold;">CLR</button>
+        
+        <button class="calc-btn fn" onclick="handleAdvCalcInput(${i}, 'sqrt(')" style="background:#e0e7ff; font-weight:bold;">√</button>
+        <button class="calc-btn fn" onclick="handleAdvCalcInput(${i}, 'log(')" style="background:#e0e7ff; font-weight:bold;">log</button>
+        <button class="calc-btn fn" onclick="handleAdvCalcInput(${i}, 'ln(')" style="background:#e0e7ff; font-weight:bold;">ln</button>
+        <button class="calc-btn" onclick="handleAdvCalcInput(${i}, '(')" style="background:#f1f5f9;">(</button>
+        <button class="calc-btn" onclick="handleAdvCalcInput(${i}, ')')" style="background:#f1f5f9;">)</button>
+
+        <button class="calc-btn num" onclick="handleAdvCalcInput(${i}, '7')" style="background:#fff; font-weight:600;">7</button>
+        <button class="calc-btn num" onclick="handleAdvCalcInput(${i}, '8')" style="background:#fff; font-weight:600;">8</button>
+        <button class="calc-btn num" onclick="handleAdvCalcInput(${i}, '9')" style="background:#fff; font-weight:600;">9</button>
+        <button class="calc-btn op" onclick="handleAdvCalcInput(${i}, 'DEL')" style="background:#fed7aa; color:#ea580c; font-weight:bold;">DEL</button>
+        <button class="calc-btn op" onclick="handleAdvCalcInput(${i}, '/')" style="background:#f1f5f9; font-weight:bold;">/</button>
+
+        <button class="calc-btn num" onclick="handleAdvCalcInput(${i}, '4')" style="background:#fff; font-weight:600;">4</button>
+        <button class="calc-btn num" onclick="handleAdvCalcInput(${i}, '5')" style="background:#fff; font-weight:600;">5</button>
+        <button class="calc-btn num" onclick="handleAdvCalcInput(${i}, '6')" style="background:#fff; font-weight:600;">6</button>
+        <button class="calc-btn fn" onclick="handleAdvCalcInput(${i}, 'pi')" style="background:#e0e7ff; font-weight:bold;">π</button>
+        <button class="calc-btn op" onclick="handleAdvCalcInput(${i}, '*')" style="background:#f1f5f9; font-weight:bold;">*</button>
+
+        <button class="calc-btn num" onclick="handleAdvCalcInput(${i}, '1')" style="background:#fff; font-weight:600;">1</button>
+        <button class="calc-btn num" onclick="handleAdvCalcInput(${i}, '2')" style="background:#fff; font-weight:600;">2</button>
+        <button class="calc-btn num" onclick="handleAdvCalcInput(${i}, '3')" style="background:#fff; font-weight:600;">3</button>
+        <button class="calc-btn op" onclick="handleAdvCalcInput(${i}, '-')" style="background:#f1f5f9; font-weight:bold;">-</button>
+        <button class="calc-btn op" onclick="handleAdvCalcInput(${i}, '+')" style="background:#f1f5f9; font-weight:bold;">+</button>
+
+        <button class="calc-btn num" onclick="handleAdvCalcInput(${i}, '0')" style="background:#fff; font-weight:600; grid-column: span 2;">0</button>
+        <button class="calc-btn" onclick="handleAdvCalcInput(${i}, '.')" style="background:#fff; font-weight:600;">.</button>
+        <button class="calc-btn action" onclick="handleAdvCalcInput(${i}, 'ENTER')" style="background:#2563eb; color:white; font-weight:bold; grid-column: span 2;">ENTER</button>
+      </div>
+    </div>
+  `;
 }
 
+function handleAdvCalcInput(wi, cmd) {
+  let w = activeIdx === null ? frontPageWidgets[wi] : data[activeIdx].widgets[wi];
+  if (!w) return;
+
+  if (cmd === 'CLEAR') {
+    w.calcExpression = '';
+    w.calcResult = '0';
+  } else if (cmd === 'DEL') {
+    w.calcExpression = w.calcExpression.slice(0, -1);
+  } else if (cmd === 'ENTER') {
+    if (!w.calcExpression) return;
+    try {
+      // Förbered uttrycket för säker evaluering via Math-funktioner
+      let expr = w.calcExpression
+        .replaceAll('sin(', 'Math.sin(')
+        .replaceAll('cos(', 'Math.cos(')
+        .replaceAll('tan(', 'Math.tan(')
+        .replaceAll('sqrt(', 'Math.sqrt(')
+        .replaceAll('log(', 'Math.log10(')
+        .replaceAll('ln(', 'Math.log(')
+        .replaceAll('pi', 'Math.PI')
+        .replaceAll('^', '**'); // Javascripts potens-operator
+
+      // Utvärdera säkert
+      let result = new Function(`return (${expr})`)();
+      if (typeof result === 'number' && !isNaN(result)) {
+        // Avrunda till 6 decimaler för renare display
+        w.calcResult = Number(result.toFixed(6)).toString();
+        w.calcHistory.push(`${w.calcExpression} = ${w.calcResult}`);
+        if (w.calcHistory.length > 3) w.calcHistory.shift();
+      } else {
+        w.calcResult = 'Error';
+      }
+    } catch (e) {
+      w.calcResult = 'Syntax Error';
+    }
+  } else {
+    w.calcExpression += cmd;
+  }
+
+  if (activeIdx === null) storage.set('alvis_front_geo', frontPageWidgets);
+  else storage.set('ver1', data);
+  render();
+}
+
+
+function renderGraphWidget(w, i) {
+  // Initiera array om den inte finns
+  if (!w.equations) {
+    w.equations = w.equation ? [w.equation] : ['x * x'];
+  }
+  if (w.zoom === undefined) w.zoom = 10; // Standardzoom (visar -10 till 10)
+
+  // Skapa funktionsrader
+  const rowsHtml = w.equations.map((eq, eqIdx) => `
+    <div class="graph-function-row">
+      <span style="font-size:0.75rem; font-weight:bold; color:var(--ui-accent)">f${eqIdx + 1}(x)=</span>
+      <input type="text" 
+             id="graph-eq-${i}-${eqIdx}" 
+             value="${escapeHtml(eq)}" 
+             onfocus="window.activeGraphInput = {widgetIdx: ${i}, eqIdx: ${eqIdx}}"
+             onchange="updateGraphEquation(${i}, ${eqIdx}, this.value)">
+      <button class="calc-btn" style="padding:4px 8px; font-size:0.75rem;" onclick="removeGraphEquation(${i}, ${eqIdx})">×</button>
+    </div>
+  `).join('');
+
+  return `
+    <div class="graph-container">
+      <div class="graph-functions-list">
+        ${rowsHtml}
+      </div>
+      
+      <div class="graph-controls-row">
+        <button class="workspace-btn" style="padding:4px 10px; font-size:0.75rem;" onclick="addGraphEquation(${i})">+ Lägg till funktion</button>
+        <button class="workspace-btn" style="padding:4px 10px; font-size:0.75rem;" onclick="combineGraphEquations(${i})">∑ Addera funktioner</button>
+        <div style="display:flex; gap:4px;">
+          <button class="calc-btn" style="padding:4px 8px;" title="Zooma in" onclick="changeGraphZoom(${i}, -2)"><i class="fas fa-search-plus"></i></button>
+          <button class="calc-btn" style="padding:4px 8px;" title="Zooma ut" onclick="changeGraphZoom(${i}, 2)"><i class="fas fa-search-minus"></i></button>
+        </div>
+      </div>
+
+      <div class="graph-keypad">
+        <button class="graph-key" onclick="insertGraphTerm('x')">x</button>
+        <button class="graph-key" onclick="insertGraphTerm('7')">7</button>
+        <button class="graph-key" onclick="insertGraphTerm('8')">8</button>
+        <button class="graph-key" onclick="insertGraphTerm('9')">9</button>
+        <button class="graph-key op" onclick="insertGraphTerm('/')">/</button>
+        <button class="graph-key action" onclick="clearGraphInput()">C</button>
+        
+        <button class="graph-key" onclick="insertGraphTerm('*')">*</button>
+        <button class="graph-key" onclick="insertGraphTerm('4')">4</button>
+        <button class="graph-key" onclick="insertGraphTerm('5')">5</button>
+        <button class="graph-key" onclick="insertGraphTerm('6')">6</button>
+        <button class="graph-key op" onclick="insertGraphTerm('*')">*</button>
+        <button class="graph-key op" onclick="insertGraphTerm('Math.sin(')">sin</button>
+        
+        <button class="graph-key" onclick="insertGraphTerm('Math.pow(x,2)')">x²</button>
+        <button class="graph-key" onclick="insertGraphTerm('1')">1</button>
+        <button class="graph-key" onclick="insertGraphTerm('2')">2</button>
+        <button class="graph-key" onclick="insertGraphTerm('3')">3</button>
+        <button class="graph-key op" onclick="insertGraphTerm('-')">-</button>
+        <button class="graph-key op" onclick="insertGraphTerm('Math.cos(')">cos</button>
+        
+        <button class="graph-key" onclick="insertGraphTerm('Math.pow(x,3)')">x³</button>
+        <button class="graph-key" onclick="insertGraphTerm('0')">0</button>
+        <button class="graph-key" onclick="insertGraphTerm('.')">.</button>
+        <button class="graph-key op" onclick="insertGraphTerm('(')">(</button>
+        <button class="graph-key op" onclick="insertGraphTerm('+')">+</button>
+        <button class="graph-key op" onclick="insertGraphTerm(')')">)</button>
+      </div>
+
+      <div class="graph-canvas-wrapper" id="graph-wrapper-${i}">
+        <div class="graph-tooltip" id="graph-tooltip-${i}"></div>
+        <canvas id="graph-canvas-${i}" width="240" height="200" 
+                style="width:100%; height:100%; display:block; background:#fff; border:1px solid #e2e8f0; border-radius:12px;"
+                onmousemove="handleGraphHover(event, ${i})"
+                onmouseleave="handleGraphLeave(${i})">
+        </canvas>
+      </div>
+      <div style="color:red; font-size:0.7rem; min-height:12px;" id="graph-error-${i}"></div>
+    </div>
+  `;
+}
+
+// 3. CENTRAL REDERINGS-DRIVRUTIN FÖR CANVAS
 function drawGraphWidgets() {
-  const category = data?.[activeIdx];
-  if (!category || !Array.isArray(category.widgets)) return;
-  category.widgets.forEach((widget, i) => {
-    if (widget.type === 'graph') drawGraphWidget(i);
+  const currentWidgets = activeIdx === null ? frontPageWidgets : (data[activeIdx]?.widgets || []);
+
+  currentWidgets.forEach((w, i) => {
+    if (w.type !== 'graph' || w.graphMode === 'window') return;
+    const canvas = document.getElementById(`adv-graph-canvas-${i}`);
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    ctx.clearRect(0, 0, width, height);
+
+    // Hämta inställda fönster-axlar
+    const xMin = parseFloat(w.xMin);
+    const xMax = parseFloat(w.xMax);
+    const yMin = parseFloat(w.yMin);
+    const yMax = parseFloat(w.yMax);
+
+    // Pixelskonverterare
+    const xToPx = (x) => ((x - xMin) / (xMax - xMin)) * width;
+    const yToPx = (y) => height - (((y - yMin) / (yMax - yMin)) * height);
+
+    // Rita Rutnät (Grid-linjer)
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+
+    // Vertikala linjer
+    const xStep = Math.max(1, Math.floor((xMax - xMin) / 10));
+    for (let x = Math.floor(xMin); x <= xMax; x += xStep) {
+      ctx.beginPath(); ctx.moveTo(xToPx(x), 0); ctx.lineTo(xToPx(x), height); ctx.stroke();
+    }
+    // Horisontella linjer
+    const yStep = Math.max(1, Math.floor((yMax - yMin) / 10));
+    for (let y = Math.floor(yMin); y <= yMax; y += yStep) {
+      ctx.beginPath(); ctx.moveTo(0, yToPx(y)); ctx.lineTo(width, yToPx(y)); ctx.stroke();
+    }
+
+    // Rita X och Y Huvudaxlar (Svarta tjockare linjer)
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 2;
+
+    // X-axel
+    if (yMin <= 0 && yMax >= 0) {
+      ctx.beginPath(); ctx.moveTo(0, yToPx(0)); ctx.lineTo(width, yToPx(0)); ctx.stroke();
+    }
+    // Y-axel
+    if (xMin <= 0 && xMax >= 0) {
+      ctx.beginPath(); ctx.moveTo(xToPx(0), 0); ctx.lineTo(xToPx(0), height); ctx.stroke();
+    }
+
+    // Funktion för att parsa stränguttryck till körbar Math-kod
+    const parseFunction = (exprString, xVal) => {
+      try {
+        if (!exprString.trim()) return null;
+        let clean = exprString.toLowerCase()
+          .replace(/(\d)(x)/g, '$1*$2') // Fixar implicit multiplikation: t.ex. 2x -> 2*x
+          .replaceAll('x', `(${xVal})`)
+          .replaceAll('sin(', 'Math.sin(')
+          .replaceAll('cos(', 'Math.cos(')
+          .replaceAll('tan(', 'Math.tan(')
+          .replaceAll('sqrt(', 'Math.sqrt(')
+          .replaceAll('pi', 'Math.PI')
+          .replaceAll('^', '**');
+        return new Function(`return (${clean})`)();
+      } catch (e) {
+        return null;
+      }
+    };
+
+    // Rita Funktion Y1 (Blå)
+    if (w.y1) {
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      let first = true;
+      for (let px = 0; px < width; px++) {
+        const x = xMin + (px / width) * (xMax - xMin);
+        const y = parseFunction(w.y1, x);
+        if (y !== null && isFinite(y)) {
+          if (first) { ctx.moveTo(px, yToPx(y)); first = false; }
+          else { ctx.lineTo(px, yToPx(y)); }
+        }
+      }
+      ctx.stroke();
+    }
+
+    // Rita Funktion Y2 (Röd)
+    if (w.y2) {
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      let first = true;
+      for (let px = 0; px < width; px++) {
+        const x = xMin + (px / width) * (xMax - xMin);
+        const y = parseFunction(w.y2, x);
+        if (y !== null && isFinite(y)) {
+          if (first) { ctx.moveTo(px, yToPx(y)); first = false; }
+          else { ctx.lineTo(px, yToPx(y)); }
+        }
+      }
+      ctx.stroke();
+    }
+
+    // Hantera TRACE-indikator (Blinkande hårkors/punkt)
+    if (w.isTraceActive) {
+      const tx = parseFloat(w.traceX);
+      const ty1 = parseFunction(w.y1 || '', tx);
+      const ty2 = parseFunction(w.y2 || '', tx);
+
+      // Uppdatera realtids-textblocken
+      const t1El = document.getElementById(`trace-y1-val-${i}`);
+      const t2El = document.getElementById(`trace-y2-val-${i}`);
+
+      if (t1El) t1El.innerText = (ty1 !== null && !isNaN(ty1)) ? `Y1: ${Number(ty1.toFixed(2))}` : 'Y1: --';
+      if (t2El) t2El.innerText = (ty2 !== null && !isNaN(ty2)) ? `Y2: ${Number(ty2.toFixed(2))}` : 'Y2: --';
+
+      // Rita hårkors för Y1 om den existerar
+      if (ty1 !== null && isFinite(ty1)) {
+        ctx.fillStyle = '#1e40af';
+        ctx.beginPath();
+        ctx.arc(xToPx(tx), yToPx(ty1), 5, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      // Rita hårkors för Y2 om den existerar
+      if (ty2 !== null && isFinite(ty2)) {
+        ctx.fillStyle = '#991b1b';
+        ctx.beginPath();
+        ctx.arc(xToPx(tx), yToPx(ty2), 5, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    }
   });
 }
 
-function drawGraphWidget(i) {
-  const widget = data?.[activeIdx]?.widgets?.[i];
-  const canvas = document.getElementById(`graph-canvas-${i}`);
-  if (!canvas || !widget) return;
-  const ctx = canvas.getContext('2d');
-  const width = canvas.width;
-  const height = canvas.height;
-  const xMin = Number(widget.graphXMin) || -10;
-  const xMax = Number(widget.graphXMax) || 10;
-  const yMin = Number(widget.graphYMin) || -5;
-  const yMax = Number(widget.graphYMax) || 5;
-  const expr = (widget.graphExpr || 'x').trim();
-
-  ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, width, height);
-  ctx.strokeStyle = '#ccd6f6';
-  ctx.lineWidth = 1;
-
-  for (let gx = 0; gx <= 10; gx++) {
-    const x = (gx / 10) * width;
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-    ctx.stroke();
-  }
-  for (let gy = 0; gy <= 10; gy++) {
-    const y = (gy / 10) * height;
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-    ctx.stroke();
-  }
-
-  const xRange = xMax - xMin;
-  const yRange = yMax - yMin;
-  const xToPx = x => ((x - xMin) / xRange) * width;
-  const yToPx = y => height - ((y - yMin) / yRange) * height;
-
-  ctx.strokeStyle = '#2e3a8c';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-
-  let graphFunc;
-  try {
-    graphFunc = Function('x', `with(Math){ return ${expr} }`);
-  } catch (error) {
-    widget.graphError = `Syntax: ${error.message}`;
-    return;
-  }
-
-  let first = true;
-  for (let step = 0; step <= width; step++) {
-    const x = xMin + (xRange * step) / width;
-    let y;
-    try {
-      y = graphFunc(x);
-    } catch (error) {
-      widget.graphError = `Eval: ${error.message}`;
-      return;
-    }
-
-    if (typeof y !== 'number' || !isFinite(y)) {
-      first = true;
-      continue;
-    }
-
-    const px = xToPx(x);
-    const py = yToPx(y);
-    if (first) {
-      ctx.moveTo(px, py);
-      first = false;
-    } else {
-      ctx.lineTo(px, py);
-    }
-  }
-
-  ctx.stroke();
-  widget.graphError = '';
+// HJÄLPFUNKTIONER FÖR INTERAKTION
+function toggleGraphMode(wi, mode) {
+  let w = activeIdx === null ? frontPageWidgets[wi] : data[activeIdx].widgets[wi];
+  if (w) w.graphMode = mode;
+  render();
 }
 
-function parseHtmlDateBlock() {
-  const now = new Date(); const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']; const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `<div class="date-view-wrapper"><span>${days[now.getDay()]}</span><strong>${now.getDate()}</strong><span>${months[now.getMonth()]}</span></div>`;
+function updateGraphWindow(wi, key, val) {
+  let w = activeIdx === null ? frontPageWidgets[wi] : data[activeIdx].widgets[wi];
+  if (w) w[key] = parseFloat(val) || 0;
+  if (activeIdx === null) storage.set('alvis_front_geo', frontPageWidgets);
+  else storage.set('ver1', data);
 }
 
-function parseHtmlCalendarBlock(textCol) {
-  const now = new Date(); const currentYear = now.getFullYear(); const currentMonth = now.getMonth();
-  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-  const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
-  let daysBuffer = '';
-  for (let i = 0; i < firstDay; i++) daysBuffer += `<div></div>`;
-  for (let day = 1; day <= totalDays; day++) {
-    const isToday = (day === now.getDate()) ? 'active-today' : '';
-    daysBuffer += `<div class="cal-day-cell ${isToday}" style="color:${isToday ? '#fff' : textCol}">${day}</div>`;
+function quickZoomGraph(wi, preset) {
+  let w = activeIdx === null ? frontPageWidgets[wi] : data[activeIdx].widgets[wi];
+  if (w && preset === 'std') {
+    w.xMin = -10; w.xMax = 10;
+    w.yMin = -10; w.yMax = 10;
+    w.traceX = 0;
   }
-  return `<div class="cal-view-wrapper"><div class="cal-title">${new Intl.DateTimeFormat('en-US', { month: 'long' }).format(now)}</div><div class="cal-grid-days">${daysBuffer}</div></div>`;
+  render();
+}
+
+function toggleGraphTrace(wi) {
+  let w = activeIdx === null ? frontPageWidgets[wi] : data[activeIdx].widgets[wi];
+  if (w) w.isTraceActive = !w.isTraceActive;
+  render();
+}
+
+function moveGraphTrace(wi, direction) {
+  let w = activeIdx === null ? frontPageWidgets[wi] : data[activeIdx].widgets[wi];
+  if (w) {
+    const step = (parseFloat(w.xMax) - parseFloat(w.xMin)) / 40; // Flytta trace dynamiskt baserat på zoomnivå
+    w.traceX += (direction * step);
+  }
+  render();
 }

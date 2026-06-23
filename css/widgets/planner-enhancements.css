@@ -835,3 +835,95 @@
   padding: 10px;
   background: #f8fafc;
 }
+
+/* AVANCERAD GRAF-WIDGET MODUL */
+.graph-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.graph-functions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 4px;
+  border-bottom: 1px dashed rgba(255, 111, 201, 0.25);
+}
+
+.graph-function-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.graph-function-row input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.graph-keypad {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.02);
+  padding: 6px;
+  border-radius: 12px;
+}
+
+.graph-key {
+  padding: 6px 2px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  text-align: center;
+}
+
+.graph-key:hover {
+  background: #f1f5f9;
+}
+
+.graph-key.op {
+  background: #e0e7ff;
+}
+
+.graph-key.action {
+  background: #fecdd3;
+}
+
+.graph-canvas-wrapper {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 200px;
+}
+
+.graph-tooltip {
+  position: absolute;
+  background: rgba(15, 23, 42, 0.85);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  pointer-events: none;
+  font-family: monospace;
+  white-space: nowrap;
+  z-index: 10;
+  display: none;
+}
+
+.graph-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}

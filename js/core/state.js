@@ -17,7 +17,7 @@ const storage = {
   }
 };
 
-let data = storage.get('_horizon_v7', []);
+let data = storage.get('ver1', []);
 let activeIdx = null;
 let activeSubId = null;
 let categoryDragMoved = false;

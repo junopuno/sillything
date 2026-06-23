@@ -234,7 +234,6 @@ function renderSubcategoryManager(category) {
         </div>`).join('') : '<p class="empty-note">No subcategories yet.</p>'}
     </div>`;
 }
-
 function render() {
   const canvas = document.getElementById('main-canvas');
   if (!canvas) return;
@@ -262,6 +261,9 @@ function render() {
   }).join('');
 
   if (activeIdx === null) {
+    // 1. TENST RENSA CANVAS SÅ GAMLA WIDGETS INTE LIGGER KVAR SOM SPÖKLAGER
+    canvas.innerHTML = '';
+
     const stats = getPlannerStats();
     dashHeader.classList.remove('hidden');
     catHeader.classList.add('hidden');
@@ -278,17 +280,22 @@ function render() {
     canvas.style.background = '';
 
     let html = renderTodayPanel();
+
+    // 2. LAGT TILL position: absolute; I STYLEN HÄR UNDER FÖR FRONTPAGE WIDGETS
     html += frontPageWidgets.map((w) => `
       <div class="widget" data-geo-id="${w.id}" data-x="${w.pos.x}" data-y="${w.pos.y}" 
-           style="transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; ${getWidgetStyleString(w.style)}">
+           style="position: absolute; transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; ${getWidgetStyleString(w.style)}">
           <div class="widget-header" style="${getWidgetHeaderStyleString(w.style)}">
               <input type="text" value="${escapeHtml(w.title)}" onchange="updateFrontTitle('${w.id}', this.value)">
               <div class="widget-controls-group"><i class="fas fa-ellipsis-v" onclick="openInspector('front','${w.id}')"></i></div>
           </div>
           <div id="inspect-front-${w.id}" class="design-inspector hidden">${renderInspectorMarkup('front', w.id, w.style)}</div>
           <div class="widget-body" style="${getWidgetBodyStyleString(w.style)}">
-              ${w.type === 'date' ? parseHtmlDateBlock() : parseHtmlCalendarBlock(w.style?.textCol)}
-          </div>
+    ${w.type === 'date'
+        ? (typeof parseHtmlDateBlock === 'function' ? parseHtmlDateBlock() : '<div class="date-view-wrapper">Laddar...</div>')
+        : (typeof parseHtmlCalendarBlock === 'function' ? parseHtmlCalendarBlock(w.style?.textCol) : '<div class="cal-view-wrapper">Laddar...</div>')
+    }
+        </div>  
       </div>`).join('');
 
     html += data.map((p, i) => {
@@ -352,7 +359,7 @@ function render() {
       <input type="text" value="${escapeHtml(category.name)}" oninput="updateCategoryName(this.value, false)" onchange="updateCategoryName(this.value)">
       <label>Icon</label>
       <select onchange="updateCategoryIcon(this.value)">
-        ${['fa-folder','fa-star','fa-calendar','fa-book','fa-briefcase','fa-heart','fa-bolt'].map(icon => `<option value="${icon}" ${category.icon === icon ? 'selected' : ''}>${icon.replace('fa-', '')}</option>`).join('')}
+        ${['fa-folder', 'fa-star', 'fa-calendar', 'fa-book', 'fa-briefcase', 'fa-heart', 'fa-bolt'].map(icon => `<option value="${icon}" ${category.icon === icon ? 'selected' : ''}>${icon.replace('fa-', '')}</option>`).join('')}
       </select>
       <label>Image icon</label>
       <input type="url" value="${escapeHtml(category.iconImage || '')}" placeholder="Paste image URL" onchange="updateCategoryIconImage(this.value)">
@@ -391,11 +398,10 @@ function render() {
               <button type="button" title="Delete" class="danger-icon" onclick="delWid(${i})"><i class="fas fa-times"></i></button>
           </div>` : '';
 
-      const widgetStyle = `transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${bgColor}; color:${w.style.textCol}; border-color:${borderColor}; border-width:${borderWidth}; border-radius:${w.style.cornerRadius}`;
-      
+      const widgetStyle = `position: absolute; transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${bgColor}; color:${w.style.textCol}; border-color:${borderColor}; border-width:${borderWidth}; border-radius:${w.style.cornerRadius}`;
+
       return `
-      <div class="${widgetClass}" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" 
-           style="${widgetStyle}">
+      <div class="${widgetClass}" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" \n           style="${widgetStyle}">
           ${headerHtml}
           ${imageControlsHtml}
           <div id="inspect-cat-${i}" class="design-inspector hidden">${renderInspectorMarkup('cat', i, w.style)}</div>
@@ -416,5 +422,5 @@ function render() {
     if (openEl) openEl.classList.remove('hidden');
   }
 
-  storage.set('_horizon_v7', data);
+  storage.set('ver1', data);
 }

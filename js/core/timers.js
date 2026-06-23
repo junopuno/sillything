@@ -59,7 +59,7 @@ function runGlobalTickingSystems() {
     });
   });
 
-  if (changedTimeState) storage.set('_horizon_v7', data);
+  if (changedTimeState) storage.set('ver1', data);
 }
 setInterval(runGlobalTickingSystems, 1000);
 

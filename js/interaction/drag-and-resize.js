@@ -29,7 +29,7 @@ function initPhysics() {
       },
       end(event) {
         event.target.style.zIndex = "";
-        storage.set('_horizon_v7', data);
+        storage.set('ver1', data);
         storage.set('alvis_front_geo', frontPageWidgets);
       }
     }
@@ -69,7 +69,7 @@ function initPhysics() {
       },
       end() {
         setTimeout(() => categoryDragMoved = false, 100);
-        storage.set('_horizon_v7', data);
+        storage.set('ver1', data);
       }
     }
   });

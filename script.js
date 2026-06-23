@@ -13,7 +13,7 @@
   9. js/core/start.js
 */
 
-/* --- DEVOS MAIN INITIALIZER --- */
+/* --- alvis MAIN INITIALIZER --- */
 
 document.addEventListener('DOMContentLoaded', () => {
   // Se till att namnet här matchar exakt funktionen i din planner-view.js
