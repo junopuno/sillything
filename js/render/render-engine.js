@@ -238,11 +238,13 @@ function render() {
   const canvas = document.getElementById('main-canvas');
   if (!canvas) return;
 
-  // HÄR KOPPLAR VI PÅ DIN NYA FIL (och använder den redan sparade canvas-variabeln!):
   if (activeIdx === 'planering') {
-    renderFullscreenPlanner();
-    return; // Stoppa här så att inga andra widgets ritas ut!
+    if (typeof renderFullscreenPlanner === 'function') {
+      renderFullscreenPlanner();
+    }
+    return;
   }
+
   const widgetControls = document.getElementById('widget-controls');
   const canvasControls = document.getElementById('canvas-controls');
   const categoryControls = document.getElementById('category-controls');
@@ -250,23 +252,24 @@ function render() {
   const dashHeader = document.getElementById('dashboard-header');
   const catHeader = document.getElementById('category-header');
 
-  nav.innerHTML = data.map((p, i) => {
-    const stats = getPlannerStats(p);
-    return `
-      <div class="menu-item ${activeIdx === i ? 'active' : ''}" onclick="openProject(${i})">
-        ${renderCategoryIcon(p)}
-        <span>${escapeHtml(p.name)}</span>
-        <small>${stats.open}</small>
-      </div>`;
-  }).join('');
+  if (nav && Array.isArray(data)) {
+    nav.innerHTML = data.map((p, i) => {
+      const stats = typeof getPlannerStats === 'function' ? getPlannerStats(p) : { open: 0 };
+      return `
+        <div class="menu-item ${activeIdx === i ? 'active' : ''}" onclick="openProject(${i})">
+          ${typeof renderCategoryIcon === 'function' ? renderCategoryIcon(p) : ''}
+          <span>${escapeHtml(p.name)}</span>
+          <small>${stats.open}</small>
+        </div>`;
+    }).join('');
+  }
 
   if (activeIdx === null) {
-    // 1. TENST RENSA CANVAS SÅ GAMLA WIDGETS INTE LIGGER KVAR SOM SPÖKLAGER
     canvas.innerHTML = '';
 
-    const stats = getPlannerStats();
-    dashHeader.classList.remove('hidden');
-    catHeader.classList.add('hidden');
+    if (dashHeader) dashHeader.classList.remove('hidden');
+    if (catHeader) catHeader.classList.add('hidden');
+
     if (widgetControls) widgetControls.innerHTML = `
       <div class="tool-note">No category selected. Add a category or open one from the left panel.</div>
       <button class="workspace-btn" onclick="addProject()">+ New Category</button>
@@ -275,47 +278,54 @@ function render() {
       <div class="tool-note">Canvas customization is available when a category is open.</div>`;
     if (categoryControls) categoryControls.innerHTML = `
       <div class="tool-note">Select a category on the left to edit its settings.</div>`;
+
     document.documentElement.style.setProperty('--page-bg', 'linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 100%)');
     document.documentElement.style.setProperty('--ui-accent', '#2563eb');
     canvas.style.background = '';
 
-    let html = renderTodayPanel();
+    let html = typeof renderTodayPanel === 'function' ? renderTodayPanel() : '';
 
-    // 2. LAGT TILL position: absolute; I STYLEN HÄR UNDER FÖR FRONTPAGE WIDGETS
-    html += frontPageWidgets.map((w) => `
-      <div class="widget" data-geo-id="${w.id}" data-x="${w.pos.x}" data-y="${w.pos.y}" 
-           style="position: absolute; transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; ${getWidgetStyleString(w.style)}">
-          <div class="widget-header" style="${getWidgetHeaderStyleString(w.style)}">
-              <input type="text" value="${escapeHtml(w.title)}" onchange="updateFrontTitle('${w.id}', this.value)">
-              <div class="widget-controls-group"><i class="fas fa-ellipsis-v" onclick="openInspector('front','${w.id}')"></i></div>
-          </div>
-          <div id="inspect-front-${w.id}" class="design-inspector hidden">${renderInspectorMarkup('front', w.id, w.style)}</div>
-          <div class="widget-body" style="${getWidgetBodyStyleString(w.style)}">
-    ${w.type === 'date'
-        ? (typeof parseHtmlDateBlock === 'function' ? parseHtmlDateBlock() : '<div class="date-view-wrapper">Laddar...</div>')
-        : (typeof parseHtmlCalendarBlock === 'function' ? parseHtmlCalendarBlock(w.style?.textCol) : '<div class="cal-view-wrapper">Laddar...</div>')
+    if (Array.isArray(frontPageWidgets)) {
+      html += frontPageWidgets.map((w) => `
+        <div class="widget" data-geo-id="${w.id}" data-x="${w.pos.x}" data-y="${w.pos.y}" 
+             style="position: absolute; transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${typeof getWidgetScale === 'function' ? getWidgetScale(w) : 1}; ${typeof getWidgetStyleString === 'function' ? getWidgetStyleString(w.style) : ''}">
+            <div class="widget-header" style="${typeof getWidgetHeaderStyleString === 'function' ? getWidgetHeaderStyleString(w.style) : ''}">
+                <input type="text" value="${escapeHtml(w.title)}" onchange="updateFrontTitle('${w.id}', this.value)">
+                <div class="widget-controls-group"><i class="fas fa-ellipsis-v" onclick="openInspector('front','${w.id}')"></i></div>
+            </div>
+            <div id="inspect-front-${w.id}" class="design-inspector hidden">${typeof renderInspectorMarkup === 'function' ? renderInspectorMarkup('front', w.id, w.style) : ''}</div>
+            <div class="widget-body" style="${typeof getWidgetBodyStyleString === 'function' ? getWidgetBodyStyleString(w.style) : ''}">
+              ${w.type === 'date'
+          ? (typeof parseHtmlDateBlock === 'function' ? parseHtmlDateBlock() : '<div class="date-view-wrapper">Laddar datum...</div>')
+          : (typeof parseHtmlCalendarBlock === 'function' ? parseHtmlCalendarBlock(w.style?.textCol) : '<div class="cal-view-wrapper">Laddar kalender...</div>')
+        }
+            </div>  
+        </div>`).join('');
     }
-        </div>  
-      </div>`).join('');
 
-    html += data.map((p, i) => {
-      const x = p.pos?.x ?? (40 + (i * 220));
-      const y = p.pos?.y ?? 300;
-      const categoryStats = getPlannerStats(p);
-      return `<div class="category-shortcut-card" data-cat-index="${i}" data-x="${x}" data-y="${y}" onclick="openProject(${i}, event)" style="position:absolute; transform: translate(${x}px, ${y}px); width:${p.size?.w ?? 220}px; height:${p.size?.h ?? 140}px; border-color:${p.accent || '#e2e8f0'};">
-                <div>${renderCategoryIcon(p)}<h4>${escapeHtml(p.name)}</h4></div>
-                <span>${p.widgets.length} widgets · ${categoryStats.percent}% done</span>
-              </div>`;
-    }).join('');
+    if (Array.isArray(data)) {
+      html += data.map((p, i) => {
+        const x = p.pos?.x ?? (40 + (i * 220));
+        const y = p.pos?.y ?? 300;
+        const categoryStats = typeof getPlannerStats === 'function' ? getPlannerStats(p) : { percent: 0 };
+        return `<div class="category-shortcut-card" data-cat-index="${i}" data-x="${x}" data-y="${y}" onclick="openProject(${i}, event)" style="position:absolute; transform: translate(${x}px, ${y}px); width:${p.size?.w ?? 220}px; height:${p.size?.h ?? 140}px; border-color:${p.accent || '#e2e8f0'};">
+                  <div>${typeof renderCategoryIcon === 'function' ? renderCategoryIcon(p) : ''}<h4>${escapeHtml(p.name)}</h4></div>
+                  <span>${p.widgets ? p.widgets.length : 0} modules · ${categoryStats.percent}% done</span>
+                </div>`;
+      }).join('');
+    }
     canvas.innerHTML = html;
   } else {
     const category = data[activeIdx];
-    const selectedSubId = activeSubId === 'uncategorized' ? null : activeSubId;
-    const stats = getPlannerStats(category, activeSubId === null ? undefined : selectedSubId);
-    dashHeader.classList.add('hidden');
-    catHeader.classList.remove('hidden');
-    document.getElementById('category-index').innerText = category.name;
-    document.getElementById('category-title-banner').innerText = category.name;
+    if (!category) return;
+
+    if (dashHeader) dashHeader.classList.add('hidden');
+    if (catHeader) catHeader.classList.remove('hidden');
+
+    const indexEl = document.getElementById('category-index');
+    const bannerEl = document.getElementById('category-title-banner');
+    if (indexEl) indexEl.innerText = category.name;
+    if (bannerEl) bannerEl.innerText = category.name;
 
     const categoryBg = category.bgColor || '#f8fafc';
     document.documentElement.style.setProperty('--page-bg', categoryBg);
@@ -354,64 +364,74 @@ function render() {
       <input type="color" value="${category.accent || '#2563eb'}" oninput="updateCategoryAccent(this.value)">
       <div class="tool-note">Customize the workspace canvas and accent for this category.</div>`;
 
-    if (categoryControls) categoryControls.innerHTML = `
-      <label>Category name</label>
-      <input type="text" value="${escapeHtml(category.name)}" oninput="updateCategoryName(this.value, false)" onchange="updateCategoryName(this.value)">
-      <label>Icon</label>
-      <select onchange="updateCategoryIcon(this.value)">
-        ${['fa-folder', 'fa-star', 'fa-calendar', 'fa-book', 'fa-briefcase', 'fa-heart', 'fa-bolt'].map(icon => `<option value="${icon}" ${category.icon === icon ? 'selected' : ''}>${icon.replace('fa-', '')}</option>`).join('')}
-      </select>
-      <label>Image icon</label>
-      <input type="url" value="${escapeHtml(category.iconImage || '')}" placeholder="Paste image URL" onchange="updateCategoryIconImage(this.value)">
-      <input type="file" accept="image/*" onchange="updateCategoryIconImageFromFile(this.files[0])">
-      <button class="workspace-btn secondary-btn" onclick="clearCategoryIconImage()">Use Font Icon</button>
-      ${renderSubcategoryManager(category)}`;
+    if (categoryControls) {
+      categoryControls.innerHTML = `
+        <label>Category name</label>
+        <input type="text" value="${escapeHtml(category.name)}" oninput="updateCategoryName(this.value, false)" onchange="updateCategoryName(this.value)">
+        <label>Icon</label>
+        <select onchange="updateCategoryIcon(this.value)">
+          ${['fa-folder', 'fa-star', 'fa-calendar', 'fa-book', 'fa-briefcase', 'fa-heart', 'fa-bolt'].map(icon => `<option value="${icon}" ${category.icon === icon ? 'selected' : ''}>${icon.replace('fa-', '')}</option>`).join('')}
+        </select>
+        <label>Image icon</label>
+        <input type="url" value="${escapeHtml(category.iconImage || '')}" placeholder="Paste image URL" onchange="updateCategoryIconImage(this.value)">
+        <input type="file" accept="image/*" onchange="updateCategoryIconImageFromFile(this.files[0])">
+        <button class="workspace-btn secondary-btn" onclick="clearCategoryIconImage()">Use Font Icon</button>
+        ${typeof renderSubcategoryManager === 'function' ? renderSubcategoryManager(category) : ''}`;
+    }
 
-    document.documentElement.style.setProperty('--page-bg', categoryBg);
-    document.documentElement.style.setProperty('--ui-accent', category.accent || '#2563eb');
+    if (category.widgets) {
+      const visibleWidgets = category.widgets
+        .map((widget, index) => ({ widget, index }))
+        .filter(item => activeSubId === null || (activeSubId === 'uncategorized' ? !item.widget.subcategoryId : item.widget.subcategoryId === activeSubId));
 
-    const visibleWidgets = category.widgets
-      .map((widget, index) => ({ widget, index }))
-      .filter(item => activeSubId === null || (activeSubId === 'uncategorized' ? !item.widget.subcategoryId : item.widget.subcategoryId === activeSubId));
+      const categoryHtml = (typeof renderSubcategoryTabs === 'function' ? renderSubcategoryTabs(category) : '') + visibleWidgets.map(({ widget: w, index: i }) => {
+        const widgetClass = w.type === 'image' ? 'widget image-widget' : 'widget';
+        const isImageWidget = w.type === 'image';
+        const hasImage = isImageWidget && Boolean(w.imageSrc);
+        const bgColor = isImageWidget ? 'transparent' : w.style?.bodyBg || '#ffffff';
+        const borderColor = isImageWidget && hasImage ? 'transparent' : w.style?.borderCol || '#e2e8f0';
+        const borderWidth = isImageWidget && hasImage ? '0px' : w.style?.borderWidth || '1px';
 
-    const categoryHtml = renderSubcategoryTabs(category) + visibleWidgets.map(({ widget: w, index: i }) => {
-      const widgetClass = w.type === 'image' ? 'widget image-widget' : 'widget';
-      const isImageWidget = w.type === 'image';
-      const hasImage = isImageWidget && Boolean(w.imageSrc);
-      const bgColor = isImageWidget ? 'transparent' : w.style.bodyBg;
-      const borderColor = isImageWidget && hasImage ? 'transparent' : w.style.borderCol;
-      const borderWidth = isImageWidget && hasImage ? '0px' : w.style.borderWidth;
-      const headerHtml = w.type === 'image' ? '' : `
-          <div class="widget-header" style="${getWidgetHeaderStyleString(w.style)}">
-              <input type="text" value="${escapeHtml(w.title)}" onchange="updateWidgetProp(${i}, 'title', this.value)">
-              <div class="widget-controls-group">
-                  ${renderWidgetSectionMenu(category, i, w)}
-                  <i class="fas fa-ellipsis-v" onclick="openInspector('cat', ${i})"></i>
-                  <i class="fas fa-copy" onclick="duplicateWidget(${i})"></i>
-                  <i class="fas fa-times" onclick="delWid(${i})" style="color:#ef4444;"></i>
-              </div>
-          </div>`;
-      const imageControlsHtml = w.type === 'image' ? `
-          <div class="image-widget-controls">
-              <button type="button" title="Customize" onclick="openInspector('cat', ${i})"><i class="fas fa-ellipsis-v"></i></button>
-              <button type="button" title="Duplicate" onclick="duplicateWidget(${i})"><i class="fas fa-copy"></i></button>
-              <button type="button" title="Delete" class="danger-icon" onclick="delWid(${i})"><i class="fas fa-times"></i></button>
-          </div>` : '';
+        const headerHtml = w.type === 'image' ? '' : `
+            <div class="widget-header" style="${typeof getWidgetHeaderStyleString === 'function' ? getWidgetHeaderStyleString(w.style) : ''}">
+                <input type="text" value="${escapeHtml(w.title)}" onchange="updateWidgetProp(${i}, 'title', this.value)">
+                <div class="widget-controls-group">
+                    ${typeof renderWidgetSectionMenu === 'function' ? renderWidgetSectionMenu(category, i, w) : ''}
+                    <i class="fas fa-ellipsis-v" onclick="openInspector('cat', ${i})"></i>
+                    <i class="fas fa-copy" onclick="duplicateWidget(${i})"></i>
+                    <i class="fas fa-times" onclick="delWid(${i})" style="color:#ef4444;"></i>
+                </div>
+            </div>`;
 
-      const widgetStyle = `position: absolute; transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${bgColor}; color:${w.style.textCol}; border-color:${borderColor}; border-width:${borderWidth}; border-radius:${w.style.cornerRadius}`;
+        const imageControlsHtml = w.type === 'image' ? `
+            <div class="image-widget-controls">
+                <button type="button" title="Customize" onclick="openInspector('cat', ${i})"><i class="fas fa-ellipsis-v"></i></button>
+                <button type="button" title="Duplicate" onclick="duplicateWidget(${i})"><i class="fas fa-copy"></i></button>
+                <button type="button" title="Delete" class="danger-icon" onclick="delWid(${i})"><i class="fas fa-times"></i></button>
+            </div>` : '';
 
-      return `
-      <div class="${widgetClass}" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" \n           style="${widgetStyle}">
-          ${headerHtml}
-          ${imageControlsHtml}
-          <div id="inspect-cat-${i}" class="design-inspector hidden">${renderInspectorMarkup('cat', i, w.style)}</div>
-          <div class="widget-body" style="${getWidgetBodyStyleString(w.style)}">${renderWidgetBody(w, i)}</div>
-      </div>`;
-    }).join('');
-    setCanvasHtmlPreservingYoutube(canvas, categoryHtml, category);
+        const widgetStyle = `position: absolute; transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${typeof getWidgetScale === 'function' ? getWidgetScale(w) : 1}; background:${bgColor}; color:${w.style?.textCol || '#1e293b'}; border-color:${borderColor}; border-width:${borderWidth}; border-radius:${w.style?.cornerRadius || '8px'}`;
+
+        return `
+        <div class="${widgetClass}" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" style="${widgetStyle}">
+            ${headerHtml}
+            ${imageControlsHtml}
+            <div id="inspect-cat-${i}" class="design-inspector hidden">${typeof renderInspectorMarkup === 'function' ? renderInspectorMarkup('cat', i, w.style) : ''}</div>
+            <div class="widget-body" style="${typeof getWidgetBodyStyleString === 'function' ? getWidgetBodyStyleString(w.style) : ''}">${typeof renderWidgetBody === 'function' ? renderWidgetBody(w, i) : ''}</div>
+        </div>`;
+      }).join('');
+
+      if (typeof setCanvasHtmlPreservingYoutube === 'function') {
+        setCanvasHtmlPreservingYoutube(canvas, categoryHtml, category);
+      } else {
+        canvas.innerHTML = categoryHtml;
+      }
+    }
   }
 
-  initPhysics();
+  if (typeof initPhysics === 'function') {
+    initPhysics();
+  }
 
   if (typeof drawGraphWidgets === 'function') {
     requestAnimationFrame(drawGraphWidgets);
@@ -422,5 +442,6 @@ function render() {
     if (openEl) openEl.classList.remove('hidden');
   }
 
+  // Sparar till din korrekta, stabila huvudnyckel
   storage.set('ver1', data);
 }

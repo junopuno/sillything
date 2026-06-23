@@ -1,28 +1,38 @@
 /* --- INITIAL DATA & STATE --- */
+
 const storage = {
   get(key, fallback) {
     try {
-      const storedValue = localStorage.getItem(key);
-      return storedValue ? JSON.parse(storedValue) : fallback;
-    } catch (error) {
+      const val = localStorage.getItem(key);
+      return val ? JSON.parse(val) : fallback;
+    } catch (e) {
+      console.error("Storage get error:", e);
       return fallback;
     }
   },
-  set(key, value) {
+  set(key, val) {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-      // file:// pages can block localStorage, so the app keeps working in memory.
+      localStorage.setItem(key, JSON.stringify(val));
+    } catch (e) {
+      console.error("Storage set error:", e);
     }
   }
 };
 
+// Läser in från dina nya fasta nycklar
 let data = storage.get('ver1', []);
+let frontPageWidgets = storage.get('ver1_front', []);
+
 let activeIdx = null;
 let activeSubId = null;
 let categoryDragMoved = false;
 let openInspectorState = null;
 
+// Genvägar för att hålla koden kompatibel med resten av appen
+function saveAllState() {
+  storage.set('ver1', data);
+  storage.set('ver1_front', frontPageWidgets);
+}
 function createDefaultStyle() {
   return {
     // Colors
