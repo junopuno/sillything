@@ -375,7 +375,7 @@ function handleImportDataFile(files) {
   };
   reader.onerror = () => { showToast('error','Unable to read file.'); if (progWrap) progWrap.style.display = 'none'; };
   reader.readAsText(file);
-}s
+}
 
 // --- Import UX helpers: toast, snapshots, drag/drop, undo ---
 function showToast(type, message, timeout = 3500) {
