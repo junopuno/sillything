@@ -354,12 +354,16 @@ function handleImportDataFile(files) {
       }
       if (!confirm('Importing data will replace your current workspace and lists. Continue?')) { if (progWrap) progWrap.style.display = 'none'; return; }
 
+      // HÄR ÄR ÄNDRINGEN I DIN IMPORT-LOGIK (där reader.onload finns):
       data = imported.data.map(normalizeCategory);
       frontPageWidgets = imported.frontPageWidgets.map(widget => normalizeWidget(widget));
       activeIdx = null;
       activeSubId = null;
+
+      // ÄNDRA HÄR SÅ ATT DET SPARAS TILL ver1:
       storage.set('ver1', data);
       storage.set('ver1_front', frontPageWidgets);
+
       render();
       showToast('success', 'Data imported successfully.');
     } catch (error) {
@@ -371,7 +375,7 @@ function handleImportDataFile(files) {
   };
   reader.onerror = () => { showToast('error','Unable to read file.'); if (progWrap) progWrap.style.display = 'none'; };
   reader.readAsText(file);
-}
+}s
 
 // --- Import UX helpers: toast, snapshots, drag/drop, undo ---
 function showToast(type, message, timeout = 3500) {
