@@ -236,14 +236,14 @@ function renderSubcategoryManager(category) {
 }
 
 function render() {
-  data = data.map(normalizeCategory);
-  if (activeIdx !== null) {
-    const currentCategory = data[activeIdx];
-    const subExists = currentCategory?.subcategories?.some(sub => sub.id === activeSubId);
-    if (activeSubId && activeSubId !== 'uncategorized' && !subExists) activeSubId = null;
-  }
-
   const canvas = document.getElementById('main-canvas');
+  if (!canvas) return;
+
+  // HÄR KOPPLAR VI PÅ DIN NYA FIL (och använder den redan sparade canvas-variabeln!):
+  if (activeIdx === 'planering') {
+    renderFullscreenPlanner();
+    return; // Stoppa här så att inga andra widgets ritas ut!
+  }
   const widgetControls = document.getElementById('widget-controls');
   const canvasControls = document.getElementById('canvas-controls');
   const categoryControls = document.getElementById('category-controls');

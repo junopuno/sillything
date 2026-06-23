@@ -1,0 +1,582 @@
+/* HELSKÄRMSPLANERING TRE-KOLUMNER */
+.full-screen-planner-view {
+  width: 100%;
+  height: calc(100vh - 200px);
+  display: grid;
+  grid-template-columns: 280px 1fr 260px;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.planner-panel {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 111, 201, 0.25);
+  padding: 20px;
+  box-shadow: var(--panel-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.planner-panel h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #431d5b;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* MINIKALENDER & NAV */
+.mini-calendar-section {
+  border-bottom: 1px solid rgba(255, 111, 201, 0.15);
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+}
+
+.planner-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.planner-nav-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #431d5b;
+}
+
+.planner-nav-btn {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 111, 201, 0.2);
+  color: #7c3ae7;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+.mini-cal-header {
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.mini-cal-day {
+  padding: 4px 0;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.mini-cal-day.today {
+  background: var(--ui-accent);
+  color: white;
+}
+
+.mini-cal-day.empty {
+  opacity: 0;
+}
+
+/* DYNAMISKA CHEKLINDOR */
+.section-header-with-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.add-list-item-btn {
+  background: rgba(255, 111, 201, 0.12);
+  border: none;
+  color: var(--ui-accent);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.planner-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.planner-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.planner-list-item input[type="checkbox"] {
+  accent-color: var(--ui-accent);
+  width: 14px;
+  height: 14px;
+}
+
+.planner-list-item input[type="text"] {
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  width: 100%;
+}
+
+.planner-list-item input[type="text"]:focus {
+  outline: none;
+}
+
+/* MITTENKOLUMN VECKOPLAN */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.week-day-box {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 111, 201, 0.1);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.week-day-box.full-width {
+  grid-column: span 2;
+}
+
+.week-day-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.week-day-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #5f2b6c;
+}
+
+.add-event-trigger-btn {
+  background: rgba(255, 111, 201, 0.1);
+  border: none;
+  color: var(--ui-accent);
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.week-day-events-viewport {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.week-day-box.today-box {
+  border: 2px solid var(--ui-accent);
+  background: linear-gradient(135deg, #fff2f8 0%, #f4faff 100%);
+}
+
+/* FRIA TEXTYTOR */
+.planner-free-notes-box,
+.planner-reminders-box {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(255, 111, 201, 0.2);
+  height: 110px;
+  display: flex;
+  flex-direction: column;
+}
+
+.planner-free-notes-box textarea,
+.planner-reminders-box textarea {
+  width: 100%;
+  flex: 1;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  padding: 8px;
+  font-size: 0.8rem;
+  resize: none;
+}
+
+/* EVENT POPUP / MODAL OVERLAY */
+.planner-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(48, 37, 76, 0.35);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.planner-modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.planner-modal-window {
+  background: #ffffff;
+  border-radius: 28px;
+  width: 420px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 111, 201, 0.2);
+  overflow: hidden;
+}
+
+.planner-modal-header {
+  padding: 16px 20px;
+  background: #fff8fb;
+  display: flex;
+  justify-content: space-between;
+}
+
+.planner-modal-header h4 {
+  margin: 0;
+  color: #431d5b;
+  font-weight: 800;
+}
+
+.modal-close-x {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.planner-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.planner-modal-body label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #431d5b;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.planner-modal-body input[type="text"],
+.planner-modal-body input[type="time"],
+.planner-modal-body select,
+.planner-modal-body textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 111, 201, 0.2);
+  font-size: 0.85rem;
+}
+
+/* FLIKAR FÖR IKONER */
+.modal-tab-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-label-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #431d5b;
+}
+
+.modal-tabs {
+  display: flex;
+  gap: 8px;
+  background: #f5eff7;
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.modal-tab-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #6f5f7d;
+  cursor: pointer;
+}
+
+.modal-tab-btn.active {
+  background: #ffffff;
+  color: var(--ui-accent);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* EMOJI RUTNÄT */
+.quick-emojis-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  text-align: center;
+  font-size: 1.3rem;
+  margin: 8px 0;
+}
+
+.quick-emojis-grid span {
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.quick-emojis-grid span:hover {
+  transform: scale(1.2);
+}
+
+/* BILD-UPPLADDNING */
+.modal-file-upload-label {
+  background: #fff8fb;
+  border: 1px dashed rgba(255, 111, 201, 0.4);
+  text-align: center;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.modal-file-upload-label input {
+  display: none;
+}
+
+.modal-icon-preview-box img {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  margin-top: 8px;
+}
+
+/* DYNAMISKA FÄRGRUTOR */
+.modal-split-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.color-picker-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.color-picker-input-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+  height: 36px;
+  border: 1px solid rgba(255, 111, 201, 0.2);
+}
+
+.color-picker-input-wrapper input[type="color"] {
+  width: 100%;
+  height: 100%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.color-preview-box-solid {
+  background: #e2d5f3;
+  border-radius: 12px;
+  text-align: center;
+  padding: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.color-preview-box-text {
+  background: #fdfafc;
+  border-radius: 12px;
+  text-align: center;
+  padding: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #431d5b;
+  border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+/* Heltäckande Eventkort */
+.planner-event-card.completely-covered {
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+}
+
+.event-card-header-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.event-card-time-tag {
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.4);
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.event-card-custom-icon-img {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+/* RETAIN FOOTER BUTTON */
+.planner-modal-footer {
+  padding: 16px;
+  background: #faf8fb;
+  display: flex;
+}
+
+.planner-btn-save-full {
+  width: 100%;
+  background: var(--ui-accent);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* Lägg till detta i din befintliga CSS */
+
+.mini-cal-day {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.mini-cal-day:hover:not(.empty) {
+  background: rgba(255, 111, 201, 0.1);
+  transform: scale(1.1);
+}
+
+.mini-cal-day.selected {
+  border: 1px solid var(--ui-accent);
+  color: var(--ui-accent);
+  font-weight: 800;
+}
+
+.planner-today-btn {
+  background: var(--ui-accent);
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(255, 110, 199, 0.2);
+}
+
+.week-day-title small {
+  display: block;
+  font-size: 0.7rem;
+  opacity: 0.5;
+  font-weight: 400;
+}
+
+/* VECKO-NAVIGATION MED PILAR */
+.week-nav-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.week-nav-wrapper h3 {
+  margin: 0 !important;
+}
+
+.week-nav-arrow {
+  background: rgba(255, 111, 201, 0.1);
+  border: none;
+  color: var(--ui-accent);
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.week-nav-arrow:hover {
+  background: var(--ui-accent);
+  color: white;
+  transform: scale(1.08);
+}
+
+.planner-week-header.inline-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+/* HELSDAGSVAL I MODAL */
+.modal-checkbox-row {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: rgba(255, 111, 201, 0.05);
+  padding: 8px 12px;
+  border-radius: 12px;
+  margin-bottom: 4px;
+}
+
+.modal-checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--ui-accent);
+  margin: 0;
+}
+
+.modal-checkbox-row span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #431d5b;
+}

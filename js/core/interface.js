@@ -25,3 +25,15 @@ function toggleThemeMenu() {
 function toggleDarkMode() {
   document.body.classList.toggle('dark-mode');
 }
+
+function goHome() {
+  activeIdx = null;
+  activeSubId = null;
+  if (typeof render === 'function') render();
+}
+
+function goPlanering() {
+  activeIdx = 'planering';
+  activeSubId = null;
+  if (typeof render === 'function') render();
+}
