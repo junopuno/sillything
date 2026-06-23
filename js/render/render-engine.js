@@ -368,6 +368,21 @@ function render() {
       .filter(item => activeSubId === null || (activeSubId === 'uncategorized' ? !item.widget.subcategoryId : item.widget.subcategoryId === activeSubId));
 
     const categoryHtml = renderSubcategoryTabs(category) + visibleWidgets.map(({ widget: w, index: i }) => {
+      // ==========================================
+      // FRISTÅENDE Y2K-MINIRÄKNARE (INTEGRERAD DRAG)
+      // ==========================================
+      if (w.type === 'calculator' || w.type === 'graph') {
+        // Vi använder klassen 'widget' så din apps inbyggda dragger aktiveras, 
+        // men lägger till 'y2k-calc-override' för att radera standardutseendet.
+        const widgetStyle = `transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w || 360}px; height:${w.size.h || 430}px; resize: both; overflow: hidden; min-width: 300px; min-height: 350px;`;
+
+        return `
+        <div class="widget y2k-calc-override" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" style="${widgetStyle}">
+            ${renderCalculator(w, i)}
+        </div>`;
+      }
+      // ==========================================
+      // --- HÄR UNDER ÄR DIN GAMLA KOD HELT ORÖRD FÖR ALLA ANDRA WIDGETS ---
       const widgetClass = w.type === 'image' ? 'widget image-widget' : 'widget';
       const isImageWidget = w.type === 'image';
       const hasImage = isImageWidget && Boolean(w.imageSrc);
@@ -375,32 +390,32 @@ function render() {
       const borderColor = isImageWidget && hasImage ? 'transparent' : w.style.borderCol;
       const borderWidth = isImageWidget && hasImage ? '0px' : w.style.borderWidth;
       const headerHtml = w.type === 'image' ? '' : `
-          <div class="widget-header" style="${getWidgetHeaderStyleString(w.style)}">
-              <input type="text" value="${escapeHtml(w.title)}" onchange="updateWidgetProp(${i}, 'title', this.value)">
-              <div class="widget-controls-group">
-                  ${renderWidgetSectionMenu(category, i, w)}
-                  <i class="fas fa-ellipsis-v" onclick="openInspector('cat', ${i})"></i>
-                  <i class="fas fa-copy" onclick="duplicateWidget(${i})"></i>
-                  <i class="fas fa-times" onclick="delWid(${i})" style="color:#ef4444;"></i>
-              </div>
-          </div>`;
+            <div class="widget-header" style="${getWidgetHeaderStyleString(w.style)}">
+                <input type="text" value="${escapeHtml(w.title)}" onchange="updateWidgetProp(${i}, 'title', this.value)">
+                <div class="widget-controls-group">
+                    ${renderWidgetSectionMenu(category, i, w)}
+                    <i class="fas fa-ellipsis-v" onclick="openInspector('cat', ${i})"></i>
+                    <i class="fas fa-copy" onclick="duplicateWidget(${i})"></i>
+                    <i class="fas fa-times" onclick="delWid(${i})" style="color:#ef4444;"></i>
+                </div>
+            </div>`;
       const imageControlsHtml = w.type === 'image' ? `
-          <div class="image-widget-controls">
-              <button type="button" title="Customize" onclick="openInspector('cat', ${i})"><i class="fas fa-ellipsis-v"></i></button>
-              <button type="button" title="Duplicate" onclick="duplicateWidget(${i})"><i class="fas fa-copy"></i></button>
-              <button type="button" title="Delete" class="danger-icon" onclick="delWid(${i})"><i class="fas fa-times"></i></button>
-          </div>` : '';
+            <div class="image-widget-controls">
+                <button type="button" title="Customize" onclick="openInspector('cat', ${i})"><i class="fas fa-ellipsis-v"></i></button>
+                <button type="button" title="Duplicate" onclick="duplicateWidget(${i})"><i class="fas fa-copy"></i></button>
+                <button type="button" title="Delete" class="danger-icon" onclick="delWid(${i})"><i class="fas fa-times"></i></button>
+            </div>` : '';
 
       const widgetStyle = `transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w}px; height:${w.size.h}px; --widget-scale:${getWidgetScale(w)}; background:${bgColor}; color:${w.style.textCol}; border-color:${borderColor}; border-width:${borderWidth}; border-radius:${w.style.cornerRadius}`;
-      
+
       return `
-      <div class="${widgetClass}" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" 
-           style="${widgetStyle}">
-          ${headerHtml}
-          ${imageControlsHtml}
-          <div id="inspect-cat-${i}" class="design-inspector hidden">${renderInspectorMarkup('cat', i, w.style)}</div>
-          <div class="widget-body" style="${getWidgetBodyStyleString(w.style)}">${renderWidgetBody(w, i)}</div>
-      </div>`;
+        <div class="${widgetClass}" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" 
+             style="${widgetStyle}">
+            ${headerHtml}
+            ${imageControlsHtml}
+            <div id="inspect-cat-${i}" class="design-inspector hidden">${renderInspectorMarkup('cat', i, w.style)}</div>
+            <div class="widget-body" style="${getWidgetBodyStyleString(w.style)}">${renderWidgetBody(w, i)}</div>
+        </div>`;
     }).join('');
     setCanvasHtmlPreservingYoutube(canvas, categoryHtml, category);
   }
@@ -418,4 +433,3 @@ function render() {
 
   storage.set('_horizon_v7', data);
 }
- 

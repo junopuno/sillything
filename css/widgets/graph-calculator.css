@@ -1,217 +1,399 @@
 /* css/graph-calculator.css */
 
+/* Huvudcontainern för räknaren - Mjuk pastell-lila/rosa 3D-box */
 .advanced-calc-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 8px;
-  background: #f1f5f9;
-  border-radius: 12px;
-  font-family: system-ui, sans-serif;
+  gap: 12px;
+  padding: 14px;
+  background: linear-gradient(135deg, #fbcfe8 0%, #e9d5ff 100%);
+  /* Pastellrosa till lila */
+  border-radius: 20px;
+  font-family: system-ui, -apple-system, sans-serif;
+  box-shadow:
+    inset -3px -3px 7px rgba(0, 0, 0, 0.15),
+    inset 3px 3px 5px rgba(255, 255, 255, 0.8),
+    4px 4px 10px rgba(0, 0, 0, 0.08);
+  /* 3D-effekt på skalet */
+  border: 2px solid #f472b6;
 }
 
+/* Övre raden (Ekvationer + Graf) */
 .calc-top-row {
   display: flex;
-  gap: 10px;
-  height: 260px;
+  gap: 12px;
+  height: 270px;
 }
 
+/* Funktionshanteraren - Insjunken mjuk 3D-yta */
 .equations-manager {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  background: #fffdfa;
+  /* Varmvit */
+  padding: 10px;
+  border-radius: 14px;
+  border: 2px solid #cbd5e1;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.08);
   overflow-y: auto;
 }
 
 .equations-manager h5 {
-  margin: 0 0 6px 0;
-  color: #475569;
-  font-size: 12px;
+  margin: 0 0 8px 0;
+  color: #6b21a8;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0px #fff;
 }
 
 .eq-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 8px;
 }
 
 .eq-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
+/* Inmatningsfälten för Y= */
 .eq-item input {
   flex: 1;
-  padding: 4px 6px;
+  padding: 6px 8px;
   font-size: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
+  font-weight: bold;
+  color: #475569;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
   background: #f8fafc;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
 }
 
 .eq-item input:focus {
-  background: #fff;
-  border-color: #3b82f6;
+  background: #ffffff;
+  border-color: #a855f7;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
   outline: none;
 }
 
+/* Små söta pastellknappar för att lägga till/kombinera funktioner */
 .calc-btn-sm {
-  padding: 4px;
+  padding: 6px;
   font-size: 11px;
-  background: #e2e8f0;
-  border: none;
-  border-radius: 4px;
+  font-weight: bold;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-bottom: 3px solid #cbd5e1;
+  border-radius: 8px;
   cursor: pointer;
-  margin-top: 4px;
+  transition: all 0.1s ease;
 }
 
 .calc-btn-sm:hover {
-  background: #cbd5e1;
+  background: #f8fafc;
+  transform: translateY(1px);
+  border-bottom-width: 2px;
+}
+
+.calc-btn-sm:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
 }
 
 .combo-btn {
-  background: #bae6fd;
+  background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
   color: #0369a1;
+  border-color: #7dd3fc;
+  border-bottom-color: #0284c7;
 }
 
 .combo-btn:hover {
-  background: #7dd3fc;
+  background: #93c5fd;
 }
 
 .del-eq-btn {
   background: none;
   border: none;
-  color: #ef4444;
+  color: #f43f5e;
   cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
+  font-size: 18px;
+  font-weight: bold;
+  transition: transform 0.1s;
 }
 
+.del-eq-btn:hover {
+  transform: scale(1.2);
+}
+
+/* Grafskärmen - y2k cyber-stil */
 .graph-canvas-wrapper canvas {
-  background: #ffffff;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
+  background: #fafafa;
+  border-radius: 14px;
+  border: 2px solid #cbd5e1;
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.1);
   cursor: crosshair;
 }
 
+/* Söta runda zoom-knappar som flyter på grafen */
 .graph-controls {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 8px;
+  right: 8px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .graph-controls button {
-  width: 24px;
-  height: 24px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
+  width: 26px;
+  height: 26px;
+  font-size: 14px;
   font-weight: bold;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  color: #7c3aed;
+  border: 1px solid #ddd6fe;
+  border-bottom: 2px solid #c084fc;
+  border-radius: 50%;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .graph-controls button:hover {
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: #f5f3ff;
+  transform: scale(1.05);
 }
 
+/* Tooltip vid hover på grafen */
 .graph-tooltip {
   position: absolute;
-  background: rgba(15, 23, 42, 0.85);
-  color: #ffffff;
-  padding: 6px 8px;
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  color: #4c1d95;
+  padding: 6px 10px;
+  border-radius: 10px;
   font-size: 11px;
+  font-weight: bold;
+  border: 1px solid #ddd6fe;
   pointer-events: none;
   white-space: nowrap;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.08);
   z-index: 10;
 }
 
+/* Analysraden i botten av skärmen */
 .graph-analysis-bar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: #334155;
-  padding: 6px;
-  border-radius: 6px;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .graph-analysis-bar button {
-  padding: 3px 8px;
+  padding: 4px 10px;
   font-size: 11px;
-  background: #475569;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
+  font-weight: bold;
+  background: linear-gradient(180deg, #fae8ff 0%, #f5d0fe 100%);
+  color: #701a75;
+  border: 1px solid #f0abfc;
+  border-bottom: 2px solid #d946ef;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 .graph-analysis-bar button:hover {
-  background: #64748b;
+  background: #f0abfc;
 }
 
 .analysis-result {
-  color: #94a3b8;
+  color: #6b21a8;
   font-size: 11px;
+  font-weight: 700;
   margin-left: auto;
 }
 
+/* Det virtuella tangentbordet - Plastiga, glansiga 3D-geléknappar */
 .calc-keyboard {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 4px;
-  background: #cbd5e1;
-  padding: 6px;
-  border-radius: 8px;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.4);
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .calc-keyboard button {
-  padding: 8px 4px;
-  font-size: 12px;
-  font-weight: 600;
-  border: none;
-  border-radius: 4px;
+  padding: 10px 4px;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid;
+  border-radius: 10px;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: transform 0.05s ease, border-width 0.05s ease;
+  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.6);
 }
 
+/* Siffror - Mjukt Pastellblå/mintiga plastknappar */
 .key-num {
-  background: #ffffff;
-  color: #1e293b;
+  background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%);
+  color: #0369a1;
+  border-color: #93c5fd;
+  border-bottom: 4px solid #0284c7;
 }
 
 .key-num:hover {
-  background: #f8fafc;
+  background: linear-gradient(180deg, #bae6fd 0%, #7dd3fc 100%);
 }
 
+/* Operatorer (+, -, *, /) - Glansig Pastellorange/Korall */
 .key-op {
-  background: #f97316;
-  color: #fff;
+  background: linear-gradient(180deg, #ffedd5 0%, #fed7aa 100%);
+  color: #c2410c;
+  border-color: #fdba74;
+  border-bottom: 4px solid #ea580c;
 }
 
 .key-op:hover {
-  background: #ea580c;
+  background: linear-gradient(180deg, #fed7aa 0%, #f97316 100%);
 }
 
+/* Mattefunktioner (sin, cos, X, x²) - Söt Pastellrosa/Lila */
 .key-fn {
-  background: #64748b;
-  color: #fff;
+  background: linear-gradient(180deg, #f3e8ff 0%, #e9d5ff 100%);
+  color: #6b21a8;
+  border-color: #d8b4fe;
+  border-bottom: 4px solid #a855f7;
 }
 
 .key-fn:hover {
-  background: #475569;
+  background: linear-gradient(180deg, #e9d5ff 0%, #c084fc 100%);
+}
+
+/* Tryck-animation för 3D-effekt (knappen trycks ned fysiskt) */
+.calc-keyboard button:active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
 }
 
 .hidden {
   display: none !important;
-} 
+}
+
+/* Gör så att själva räknarboxen fyller ut hela det fristående fönstret när man resizar */
+.standalone-y2k-calculator {
+  display: flex;
+  flex-direction: column;
+}
+
+.standalone-y2k-calculator .advanced-calc-container {
+  flex: 1;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Ändra utseendet på webbläsarens inbyggda resize-handtag så det syns bra */
+.standalone-y2k-calculator::-webkit-resizer {
+  background-color: #f472b6;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Styling för den nya Y2K-stängningsknappen */
+.calc-custom-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #f472b6 0%, #c084fc 100%) !important;
+  padding: 6px 12px !important;
+  border-radius: 10px !important;
+  margin-bottom: 8px !important;
+  border: 1px solid #db2777 !important;
+  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.calc-header-title {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.calc-close-btn {
+  width: 18px !important;
+  height: 18px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 13px !important;
+  font-weight: bold !important;
+  line-height: 14px !important;
+  color: #ffffff !important;
+  background: radial-gradient(circle at 5px 5px, #fca5a5 0%, #ef4444 80%) !important;
+  border: 1px solid rgba(0, 0, 0, 0.2) !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.05s ease;
+}
+
+.calc-close-btn:hover {
+  background: #dc2626 !important;
+  transform: scale(1.1);
+}
+
+.calc-close-btn:active {
+  transform: scale(0.95);
+}
+
+/* Rensa bort allt standardutseende från appens .widget-klass för just räknaren */
+.widget.y2k-calc-override {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Se till att den inbyggda Y2K-headern sträcker sig hela vägen och fungerar som drag-yta */
+.y2k-calc-override .calc-custom-header {
+  cursor: move;
+  /* Visar flytta-ikonen när man hovrar över den rosa listen */
+}
+
+/* Tvinga vår rosa Y2K-stil att gälla, även om appen har andra stiler för .widget-header */
+.calc-custom-header.widget-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  background: linear-gradient(90deg, #f472b6 0%, #c084fc 100%) !important;
+  padding: 6px 12px !important;
+  border-radius: 10px !important;
+  margin-bottom: 8px !important;
+  border: 1px solid #db2777 !important;
+  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.6) !important;
+  height: auto !important;
+  /* Återställ om appen har en fast höjd */
+  cursor: move !important;
+}
+
+/* Dölj eventuella inmatningsfält eller extra ikoner om appen försöker trycka in dem i vår header */
+.calc-custom-header.widget-header input,
+.calc-custom-header.widget-header .widget-controls-group {
+  display: none !important;
+}

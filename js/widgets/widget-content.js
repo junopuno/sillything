@@ -309,43 +309,105 @@ function renderMedia(w, i) {
     </div>`;
 }
 
+function parseYoutubeVideoId(url = '') {
+  const cleanUrl = url.trim();
+  if (!cleanUrl) return '';
+
+  try {
+    const parsed = new URL(cleanUrl);
+    let videoId = '';
+
+    if (parsed.hostname.includes('youtu.be')) {
+      videoId = parsed.pathname.split('/').filter(Boolean)[0] || '';
+    } else if (parsed.hostname.includes('youtube.com')) {
+      const parts = parsed.pathname.split('/').filter(Boolean);
+      if (parsed.searchParams.get('v')) videoId = parsed.searchParams.get('v');
+      else if (parts[0] === 'shorts' || parts[0] === 'embed' || parts[0] === 'live') videoId = parts[1] || '';
+    }
+
+    return videoId;
+  } catch (error) {
+    return '';
+  }
+}
+
 function renderCalculator(w, i) {
+  if (!w.equations) w.equations = [{ id: 'y1', expr: 'x^2', color: '#ef4444' }];
+  if (!w.graphConfig) w.graphConfig = { minX: -10, maxX: 10, minY: -10, maxY: 10 };
+
   return `
-    <div class="calculator-widget">
-      <div class="calculator-display">
-        <input id="calc-input-${i}" type="text" value="${escapeHtml(w.calcInput || '')}" placeholder="0" onchange="updateWidgetProp(${i},'calcInput',this.value)">
-        <div class="calculator-result">${escapeHtml(w.calcResult || '') || '<span class="hint">Result appears here</span>'}</div>
+    <div class="advanced-calc-container" data-wid="${i}">
+      
+      <div class="calc-custom-header widget-header">
+        <span class="calc-header-title">🎀 GraphCalc OS v1.0</span>
+        <div class="calc-header-controls">
+          <button type="button" class="calc-close-btn" onclick="delWid(${i})" title="Close">&times;</button>
+        </div>
       </div>
-      <div class="calculator-keypad">
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'7')">7</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'8')">8</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'9')">9</button>
-        <button class="calc-btn operator" onclick="appendCalculatorToken(${i},'/')">÷</button>
-        <button class="calc-btn fn" onclick="appendCalculatorToken(${i},'sin(')">sin</button>
 
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'4')">4</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'5')">5</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'6')">6</button>
-        <button class="calc-btn operator" onclick="appendCalculatorToken(${i},'*')">×</button>
-        <button class="calc-btn fn" onclick="appendCalculatorToken(${i},'cos(')">cos</button>
-
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'1')">1</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'2')">2</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'3')">3</button>
-        <button class="calc-btn operator" onclick="appendCalculatorToken(${i},'-')">−</button>
-        <button class="calc-btn fn" onclick="appendCalculatorToken(${i},'tan(')">tan</button>
-
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'0')">0</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'.')">.</button>
-        <button class="calc-btn" onclick="appendCalculatorToken(${i},'^')">^</button>
-        <button class="calc-btn operator" onclick="appendCalculatorToken(${i},'+')">+</button>
-        <button class="calc-btn fn" onclick="appendCalculatorToken(${i},'log(')">log</button>
-
-        <button class="calc-action-btn" onclick="deleteCalculatorChar(${i})">Del</button>
-        <button class="calc-action-btn" onclick="clearCalculator(${i})">C</button>
-        <button class="calc-action-btn wide" onclick="evaluateCalculator(${i})">=</button>
+      <div class="calc-top-row">
+        <div class="equations-manager">
+          <h5>Functions ($Y=$)</h5>
+          <div class="eq-list" id="eq-list-${i}">
+            ${renderEquationInputs(w, i)}
+          </div>
+          <button class="calc-btn-sm" onclick="addNewEquation(${i})">+ Add Function</button>
+          <button class="calc-btn-sm combo-btn" onclick="openComboManager(${i})">∑ Add/Combine Eq</button>
+        </div>
+        
+        <div class="graph-canvas-wrapper" style="position:relative;">
+          <canvas id="graph-canvas-${i}" width="320" height="260" 
+                  onmousemove="trackGraphHover(event, ${i})" 
+                  onmouseleave="clearGraphHover(${i})"></canvas>
+          <div class="graph-controls">
+            <button onclick="zoomGraph(${i}, 0.5)" title="Zoom In">+</button>
+            <button onclick="zoomGraph(${i}, 2.0)" title="Zoom Out">-</button>
+            <button onclick="resetGraphZoom(${i})" title="Reset">⟲</button>
+          </div>
+          <div id="graph-tooltip-${i}" class="graph-tooltip hidden"></div>
+        </div>
       </div>
-    </div>`;
+
+      <div class="graph-analysis-bar" id="analysis-bar-${i}">
+        <button onclick="analyzeGraph(${i}, 'min')">Find Min</button>
+        <button onclick="analyzeGraph(${i}, 'max')">Find Max</button>
+        <button onclick="analyzeGraph(${i}, 'zeros')">Find Zeros</button>
+        <span class="analysis-result" id="analysis-res-${i}">Select analysis option...</span>
+      </div>
+
+      <div class="calc-keyboard">
+        <button class="key-fn" onclick="insertKey('x')">X</button>
+        <button class="key-fn" onclick="insertKey('^2')">x²</button>
+        <button class="key-fn" onclick="insertKey('^')">xʸ</button>
+        <button class="key-fn" onclick="insertKey('sqrt(')">√</button>
+        <button class="key-op" onclick="clearActiveInput()">CE</button>
+        
+        <button class="key-fn" onclick="insertKey('sin(')">sin</button>
+        <button class="key-num" onclick="insertKey('7')">7</button>
+        <button class="key-num" onclick="insertKey('8')">8</button>
+        <button class="key-num" onclick="insertKey('9')">9</button>
+        <button class="key-op" onclick="insertKey('/')">/</button>
+        
+        <button class="key-fn" onclick="insertKey('cos(')">cos</button>
+        <button class="key-num" onclick="insertKey('4')">4</button>
+        <button class="key-num" onclick="insertKey('5')">5</button>
+        <button class="key-num" onclick="insertKey('6')">6</button>
+        <button class="key-op" onclick="insertKey('*')">*</button>
+        
+        <button class="key-fn" onclick="insertKey('tan(')">tan</button>
+        <button class="key-num" onclick="insertKey('1')">1</button>
+        <button class="key-num" onclick="insertKey('2')">2</button>
+        <button class="key-num" onclick="insertKey('3')">3</button>
+        <button class="key-op" onclick="insertKey('-')">-</button>
+        
+        <button class="key-fn" onclick="insertKey('pi')">π</button>
+        <button class="key-num" onclick="insertKey('0')">0</button>
+        <button class="key-num" onclick="insertKey('.')">.</button>
+        <button class="key-fn" onclick="insertKey('(')">(</button>
+        <button class="key-op" onclick="insertKey('+')">+</button>
+      </div>
+    </div>
+  `;
 }
  
 function renderGraphWidget(w, i) {
@@ -383,27 +445,7 @@ function renderGraphWidget(w, i) {
     </div>`;
 }
 
-function parseYoutubeVideoId(url = '') {
-  const cleanUrl = url.trim();
-  if (!cleanUrl) return '';
 
-  try {
-    const parsed = new URL(cleanUrl);
-    let videoId = '';
-
-    if (parsed.hostname.includes('youtu.be')) {
-      videoId = parsed.pathname.split('/').filter(Boolean)[0] || '';
-    } else if (parsed.hostname.includes('youtube.com')) {
-      const parts = parsed.pathname.split('/').filter(Boolean);
-      if (parsed.searchParams.get('v')) videoId = parsed.searchParams.get('v');
-      else if (parts[0] === 'shorts' || parts[0] === 'embed' || parts[0] === 'live') videoId = parts[1] || '';
-    }
-
-    return videoId;
-  } catch (error) {
-    return '';
-  }
-}
 
 function evaluateCalculator(i) {
   const widget = data?.[activeIdx]?.widgets?.[i];

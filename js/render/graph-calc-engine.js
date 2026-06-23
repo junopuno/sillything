@@ -1,84 +1,6 @@
 // js/render/graph-calc-engine.js
 
-// Håller koll på vilket inmatningsfält som har fokus just nu (t.ex. "y1", "y2")
 let activeInputTarget = null;
-
-/**
- * Renderar själva kroppen för räknar- och grafwidgets
- */
-function renderWidgetBody(w, i) {
-  if (w.type === 'calculator' || w.type === 'graph') {
-    if (!w.equations) w.equations = [{ id: 'y1', expr: 'x^2', color: '#ef4444' }];
-    if (!w.graphConfig) w.graphConfig = { minX: -10, maxX: 10, minY: -10, maxY: 10 };
-
-    return `
-      <div class="advanced-calc-container" data-wid="${i}">
-        <div class="calc-top-row">
-          <div class="equations-manager">
-            <h5>Functions ($Y=$)</h5>
-            <div class="eq-list" id="eq-list-${i}">
-              ${renderEquationInputs(w, i)}
-            </div>
-            <button class="calc-btn-sm" onclick="addNewEquation(${i})">+ Add Function</button>
-            <button class="calc-btn-sm combo-btn" onclick="openComboManager(${i})">∑ Add/Combine Eq</button>
-          </div>
-          
-          <div class="graph-canvas-wrapper" style="position:relative;">
-            <canvas id="graph-canvas-${i}" width="320" height="260" 
-                    onmousemove="trackGraphHover(event, ${i})" 
-                    onmouseleave="clearGraphHover(${i})"></canvas>
-            <div class="graph-controls">
-              <button onclick="zoomGraph(${i}, 0.5)" title="Zoom In">+</button>
-              <button onclick="zoomGraph(${i}, 2.0)" title="Zoom Out">-</button>
-              <button onclick="resetGraphZoom(${i})" title="Reset">⟲</button>
-            </div>
-            <div id="graph-tooltip-${i}" class="graph-tooltip hidden"></div>
-          </div>
-        </div>
-
-        <div class="graph-analysis-bar" id="analysis-bar-${i}">
-          <button onclick="analyzeGraph(${i}, 'min')">Find Min</button>
-          <button onclick="analyzeGraph(${i}, 'max')">Find Max</button>
-          <button onclick="analyzeGraph(${i}, 'zeros')">Find Zeros</button>
-          <span class="analysis-result" id="analysis-res-${i}">Select analysis option...</span>
-        </div>
-
-        <div class="calc-keyboard">
-          <button class="key-fn" onclick="insertKey('x')">X</button>
-          <button class="key-fn" onclick="insertKey('^2')">x²</button>
-          <button class="key-fn" onclick="insertKey('^')">xʸ</button>
-          <button class="key-fn" onclick="insertKey('sqrt(')">√</button>
-          <button class="key-op" onclick="clearActiveInput()">CE</button>
-          
-          <button class="key-fn" onclick="insertKey('sin(')">sin</button>
-          <button class="key-num" onclick="insertKey('7')">7</button>
-          <button class="key-num" onclick="insertKey('8')">8</button>
-          <button class="key-num" onclick="insertKey('9')">9</button>
-          <button class="key-op" onclick="insertKey('/')">/</button>
-          
-          <button class="key-fn" onclick="insertKey('cos(')">cos</button>
-          <button class="key-num" onclick="insertKey('4')">4</button>
-          <button class="key-num" onclick="insertKey('5')">5</button>
-          <button class="key-num" onclick="insertKey('6')">6</button>
-          <button class="key-op" onclick="insertKey('*')">*</button>
-          
-          <button class="key-fn" onclick="insertKey('tan(')">tan</button>
-          <button class="key-num" onclick="insertKey('1')">1</button>
-          <button class="key-num" onclick="insertKey('2')">2</button>
-          <button class="key-num" onclick="insertKey('3')">3</button>
-          <button class="key-op" onclick="insertKey('-')">-</button>
-          
-          <button class="key-fn" onclick="insertKey('pi')">π</button>
-          <button class="key-num" onclick="insertKey('0')">0</button>
-          <button class="key-num" onclick="insertKey('.')">.</button>
-          <button class="key-fn" onclick="insertKey('(')">(</button>
-          <button class="key-op" onclick="insertKey('+')">+</button>
-        </div>
-      </div>
-    `;
-  }
-  return '';
-}
 
 function renderEquationInputs(w, wi) {
   return w.equations.map((eq, idx) => `
@@ -233,7 +155,7 @@ function drawGraphWidgets(specificWi = null) {
     let origoY = canvas.height - (((0 - cfg.minY) / (cfg.maxY - cfg.minY)) * canvas.height);
 
     if (origoX >= 0 && origoX <= canvas.width) {
-      ctx.beginPath(); ctx.moveTo(origoX, 0); ctx.lineTo(origoX, canvas.height); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(origoX, 0); ctx.lineTo(origoX, canvas.height); stroke();
     }
     if (origoY >= 0 && origoY <= canvas.height) {
       ctx.beginPath(); ctx.moveTo(0, origoY); ctx.lineTo(canvas.width, origoY); ctx.stroke();
@@ -374,6 +296,83 @@ function analyzeGraph(wi, type) {
   }
 }
 
-if (typeof requestAnimationFrame !== 'undefined') {
-  requestAnimationFrame(() => drawGraphWidgets());
-} 
+// --- Y2K FÖNSTER-DRAGGER LOGIK FÖR DEVO-S ---
+document.addEventListener('mousedown', function (e) {
+  // Kolla om vi klickade på vår special-header eller någon text inuti den
+  const header = e.target.closest('.calc-custom-header');
+  if (!header) return;
+
+  // Hitta hela räknar-containern
+  const container = header.closest('.draggable-y2k-calc');
+  if (!container) return;
+
+  // Förhindra att text markeras när vi drar
+  e.preventDefault();
+
+  const index = parseInt(container.getAttribute('data-index'));
+
+  // Hämta nuvarande positioner
+  let currentX = parseFloat(container.getAttribute('data-x')) || 0;
+  let currentY = parseFloat(container.getAttribute('data-y')) || 0;
+
+  let startX = e.clientX;
+  let startY = e.clientY;
+
+  function onMouseMove(moveEvent) {
+    const dx = moveEvent.clientX - startX;
+    const dy = moveEvent.clientY - startY;
+
+    const newX = currentX + dx;
+    const newY = currentY + dy;
+
+    // Uppdatera elementets utseende direkt på skärmen
+    container.style.transform = `translate(${newX}px, ${newY}px)`;
+
+    // Uppdatera data-attributen så att nästa drag utgår härifrån
+    container.setAttribute('data-x', newX);
+    container.setAttribute('data-y', newY);
+
+    // Spara positionen i ditt DevOS-system/state så att det kommes ihåg vid reload
+    if (window.data && window.activeIdx !== null && window.data[window.activeIdx]?.widgets[index]) {
+      window.data[window.activeIdx].widgets[index].pos = { x: newX, y: newY };
+    }
+
+    startX = moveEvent.clientX;
+    startY = moveEvent.clientY;
+    currentX = newX;
+    currentY = newY;
+  }
+
+  function onMouseUp() {
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+
+    // Spara hela statet till localstorage om din app har en save-funktion
+    if (typeof saveAllState === 'function') saveAllState();
+    else if (typeof saveState === 'function') saveState();
+  }
+
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+});
+
+// --- RESIZE BEVAKNING ---
+// Lyssnar på om användaren drar i hörnet för att ändra storlek, och sparar det i statet
+document.addEventListener('mouseup', function (e) {
+  const container = e.target.closest('.draggable-y2k-calc');
+  if (!container) return;
+
+  const index = parseInt(container.getAttribute('data-index'));
+  const width = container.offsetWidth;
+  const height = container.offsetHeight;
+
+  if (window.data && window.activeIdx !== null && window.data[window.activeIdx]?.widgets[index]) {
+    window.data[window.activeIdx].widgets[index].size = { w: width, h: height };
+    if (typeof saveAllState === 'function') saveAllState();
+  }
+
+  // Rita om grafen så att den anpassar sig till den nya storleken!
+  if (typeof drawGraphWidgets === 'function') {
+    drawGraphWidgets(index);
+  }
+});
