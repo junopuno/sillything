@@ -12,3 +12,14 @@
   8. js/actions/state-changers.js
   9. js/core/start.js
 */
+
+/* --- DEVOS MAIN INITIALIZER --- */
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Se till att namnet här matchar exakt funktionen i din planner-view.js
+  if (typeof renderFullscreenPlanner === 'function') {
+    renderFullscreenPlanner();
+  } else {
+    console.error("Kunde inte hitta renderFullscreenPlanner-funktionen!");
+  }
+});
