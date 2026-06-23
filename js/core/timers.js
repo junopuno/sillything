@@ -1,6 +1,7 @@
 /* --- TICKING SYSTEMS (Clock, Countdown, Timer) --- */
 
 function runGlobalTickingSystems() {
+  if (!data || data.length === 0) return;
   const now = new Date();
   const hrs = now.getHours();
 
