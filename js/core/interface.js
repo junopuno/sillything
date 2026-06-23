@@ -37,3 +37,4 @@ function goPlanering() {
   activeSubId = null;
   if (typeof render === 'function') render();
 }
+
