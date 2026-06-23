@@ -1,0 +1,217 @@
+/* css/graph-calculator.css */
+
+.advanced-calc-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  font-family: system-ui, sans-serif;
+}
+
+.calc-top-row {
+  display: flex;
+  gap: 10px;
+  height: 260px;
+}
+
+.equations-manager {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  overflow-y: auto;
+}
+
+.equations-manager h5 {
+  margin: 0 0 6px 0;
+  color: #475569;
+  font-size: 12px;
+}
+
+.eq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.eq-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.eq-item input {
+  flex: 1;
+  padding: 4px 6px;
+  font-size: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background: #f8fafc;
+}
+
+.eq-item input:focus {
+  background: #fff;
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.calc-btn-sm {
+  padding: 4px;
+  font-size: 11px;
+  background: #e2e8f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.calc-btn-sm:hover {
+  background: #cbd5e1;
+}
+
+.combo-btn {
+  background: #bae6fd;
+  color: #0369a1;
+}
+
+.combo-btn:hover {
+  background: #7dd3fc;
+}
+
+.del-eq-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.graph-canvas-wrapper canvas {
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  cursor: crosshair;
+}
+
+.graph-controls {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.graph-controls button {
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.graph-controls button:hover {
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.graph-tooltip {
+  position: absolute;
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.graph-analysis-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #334155;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.graph-analysis-bar button {
+  padding: 3px 8px;
+  font-size: 11px;
+  background: #475569;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.graph-analysis-bar button:hover {
+  background: #64748b;
+}
+
+.analysis-result {
+  color: #94a3b8;
+  font-size: 11px;
+  margin-left: auto;
+}
+
+.calc-keyboard {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  background: #cbd5e1;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.calc-keyboard button {
+  padding: 8px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.key-num {
+  background: #ffffff;
+  color: #1e293b;
+}
+
+.key-num:hover {
+  background: #f8fafc;
+}
+
+.key-op {
+  background: #f97316;
+  color: #fff;
+}
+
+.key-op:hover {
+  background: #ea580c;
+}
+
+.key-fn {
+  background: #64748b;
+  color: #fff;
+}
+
+.key-fn:hover {
+  background: #475569;
+}
+
+.hidden {
+  display: none !important;
+} 
