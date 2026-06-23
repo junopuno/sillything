@@ -19,3 +19,4 @@
   if (typeof window !== 'undefined') window.validateImport = validateImport;
   if (typeof module !== 'undefined' && module.exports) module.exports = { validateImport };
 })();
+ 

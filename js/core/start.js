@@ -8,3 +8,4 @@ if (typeof render === 'function' && typeof updateMenuActiveStates === 'function'
     if (typeof updateMenuActiveStates === 'function') updateMenuActiveStates();
   });
 }
+ 

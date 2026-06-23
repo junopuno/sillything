@@ -418,3 +418,4 @@ function render() {
 
   storage.set('_horizon_v7', data);
 }
+ 

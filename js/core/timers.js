@@ -83,3 +83,4 @@ function formatClockFace(w) {
   options.hour12 = w.clockFormat === '12';
   return now.toLocaleTimeString('en-US', options);
 }
+ 

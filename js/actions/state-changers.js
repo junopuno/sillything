@@ -578,3 +578,4 @@ function toggleHabitDay(wi, hi, di) {
   habit.days[di] = !habit.days[di];
   render();
 }
+ 

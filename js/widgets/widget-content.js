@@ -347,7 +347,7 @@ function renderCalculator(w, i) {
       </div>
     </div>`;
 }
-
+ 
 function renderGraphWidget(w, i) {
   return `
     <div class="graph-widget">

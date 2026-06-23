@@ -30,3 +30,4 @@
 #import-drop-zone { cursor: pointer; border-radius:8px; }
 #import-drop-zone:hover { box-shadow: 0 8px 20px rgba(99, 39, 76, 0.06); }
 #import-drop-zone:focus { outline: none; box-shadow: 0 0 0 4px rgba(255,110,199,0.12); border-color: var(--ui-accent); }
+ 

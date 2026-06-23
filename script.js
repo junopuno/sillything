@@ -23,3 +23,4 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error("Kunde inte hitta renderFullscreenPlanner-funktionen!");
   }
 });
+ 

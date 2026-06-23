@@ -204,3 +204,4 @@ function saveWidgetPreset(scope, ref) {
   storage.set('alvis_widget_presets', widgetPresets);
   render();
 }
+ 

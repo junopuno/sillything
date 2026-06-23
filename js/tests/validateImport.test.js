@@ -12,3 +12,4 @@ assert.strictEqual(validateImport(bad1).valid, false, 'null should be invalid');
 assert.strictEqual(validateImport(bad2).valid, false, 'data as string should be invalid');
 assert.strictEqual(validateImport(bad3).valid, false, 'frontPageWidgets as string should be invalid');
 console.log('All validateImport tests passed.');
+ 

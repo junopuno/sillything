@@ -413,4 +413,4 @@ function handleIconImageUpload(input) {
   reader.onload = e => { selectedIconData = e.target.result; document.getElementById('modal-icon-img-preview').innerHTML = `<img src="${e.target.result}" />`; };
   reader.readAsDataURL(input.files[0]);
 }
-function setupColorPickerListeners() { }
+function setupColorPickerListeners() { } 

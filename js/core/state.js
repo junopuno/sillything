@@ -201,3 +201,4 @@ function normalizeCategory(category, index) {
 }
 
 data = data.map(normalizeCategory);
+ 
