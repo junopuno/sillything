@@ -359,7 +359,7 @@ function handleImportDataFile(files) {
       activeIdx = null;
       activeSubId = null;
       storage.set('ver1', data);
-      storage.set('alvis_front_geo', frontPageWidgets);
+      storage.set('ver1_front', frontPageWidgets);
       render();
       showToast('success', 'Data imported successfully.');
     } catch (error) {
@@ -419,7 +419,7 @@ function undoLastChange() {
   data = snap.data || [];
   frontPageWidgets = snap.frontPageWidgets || [];
   storage.set('ver1', data);
-  storage.set('alvis_front_geo', frontPageWidgets);
+  storage.set('ver1_front', frontPageWidgets);
   render();
   showToast('success','Undo successful');
   const btn = document.getElementById('undo-import-btn'); if (btn && !window._snapshots.length) btn.disabled = true;

@@ -30,7 +30,7 @@ function initPhysics() {
       end(event) {
         event.target.style.zIndex = "";
         storage.set('ver1', data);
-        storage.set('alvis_front_geo', frontPageWidgets);
+        storage.set('ver1_front', frontPageWidgets);
       }
     }
   }).resizable({

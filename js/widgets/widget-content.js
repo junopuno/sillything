@@ -429,7 +429,7 @@ function handleAdvCalcInput(wi, cmd) {
     w.calcExpression += cmd;
   }
 
-  if (activeIdx === null) storage.set('alvis_front_geo', frontPageWidgets);
+  if (activeIdx === null) storage.set('ver1_front', frontPageWidgets);
   else storage.set('ver1', data);
   render();
 }
@@ -664,7 +664,7 @@ function toggleGraphMode(wi, mode) {
 function updateGraphWindow(wi, key, val) {
   let w = activeIdx === null ? frontPageWidgets[wi] : data[activeIdx].widgets[wi];
   if (w) w[key] = parseFloat(val) || 0;
-  if (activeIdx === null) storage.set('alvis_front_geo', frontPageWidgets);
+  if (activeIdx === null) storage.set('ver1_front', frontPageWidgets);
   else storage.set('ver1', data);
 }
 

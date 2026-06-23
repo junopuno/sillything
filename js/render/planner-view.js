@@ -6,10 +6,10 @@ let currentIconType = 'emoji';
 let selectedIconData = '✨';
 
 // Hämta sparade data från localStorage
-let plannerEvents = JSON.parse(localStorage.getItem('alvis_planner_events_v2')) || {};
+let plannerEvents = JSON.parse(localStorage.getItem('ver1_planner_events_v2')) || {};
 
 // Ändrad till ett objekt där nyckeln blir veckan, t.ex. "2026-W26"
-let plannerWeeklyData = JSON.parse(localStorage.getItem('alvis_planner_weekly_data')) || {};
+let plannerWeeklyData = JSON.parse(localStorage.getItem('ver1_planner_weekly_data')) || {};
 
 /* --- NAVIGATION --- */
 function changePlannerMonth(direction) {
@@ -71,7 +71,7 @@ function getCurrentWeeklyData() {
 }
 
 function saveWeeklyDataState() {
-  localStorage.setItem('alvis_planner_weekly_data', JSON.stringify(plannerWeeklyData));
+  localStorage.setItem('ver1_planner_weekly_data', JSON.stringify(plannerWeeklyData));
 }
 
 /* --- MODAL / EVENT LOGIK --- */
@@ -141,14 +141,14 @@ function savePlannerEvent() {
     return a.time.localeCompare(b.time);
   });
 
-  localStorage.setItem('alvis_planner_events_v2', JSON.stringify(plannerEvents));
+  localStorage.setItem('ver1_planner_events_v2', JSON.stringify(plannerEvents));
   closeEventModal();
   renderFullscreenPlanner();
 }
 
 function deletePlannerEvent(dateKey, eventId) {
   plannerEvents[dateKey] = plannerEvents[dateKey].filter(e => e.id !== eventId);
-  localStorage.setItem('alvis_planner_events_v2', JSON.stringify(plannerEvents));
+  localStorage.setItem('ver1_planner_events_v2', JSON.stringify(plannerEvents));
   renderFullscreenPlanner();
 }
 

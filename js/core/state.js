@@ -47,12 +47,12 @@ function createDefaultStyle() {
   };
 }
 
-let frontPageWidgets = storage.get('alvis_front_geo', [
+let frontPageWidgets = storage.get('ver1_front', [
   { id: 'geo-date', type: 'date', title: 'Today', pos: { x: 40, y: 30 }, size: { w: 160, h: 180 }, style: createDefaultStyle() },
   { id: 'geo-cal', type: 'cal', title: 'Calendar Grid', pos: { x: 230, y: 30 }, size: { w: 320, h: 180 }, style: createDefaultStyle() }
 ]);
 
-let widgetPresets = storage.get('alvis_widget_presets', [
+let widgetPresets = storage.get('ver1_widget_presets', [
   { id: 'preset-clean', name: 'Clean', style: createDefaultStyle() },
   { id: 'preset-bold', name: 'Bold', style: { ...createDefaultStyle(), borderWidth: '2px', headerHeight: '45px', headerBorderBottom: '2px solid #7b2cbf' } },
   { id: 'preset-minimal', name: 'Minimal', style: { ...createDefaultStyle(), borderWidth: '0px', headerHeight: '35px', headerBg: 'transparent', headerBorderBottom: 'none' } }
