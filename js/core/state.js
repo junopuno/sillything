@@ -1,38 +1,28 @@
 /* --- INITIAL DATA & STATE --- */
-
 const storage = {
   get(key, fallback) {
     try {
-      const val = localStorage.getItem(key);
-      return val ? JSON.parse(val) : fallback;
-    } catch (e) {
-      console.error("Storage get error:", e);
+      const storedValue = localStorage.getItem(key);
+      return storedValue ? JSON.parse(storedValue) : fallback;
+    } catch (error) {
       return fallback;
     }
   },
-  set(key, val) {
+  set(key, value) {
     try {
-      localStorage.setItem(key, JSON.stringify(val));
-    } catch (e) {
-      console.error("Storage set error:", e);
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      // file:// pages can block localStorage, so the app keeps working in memory.
     }
   }
 };
 
-// Läser in från dina nya fasta nycklar
-let data = storage.get('ver1', []);
-let frontPageWidgets = storage.get('ver1_front', []);
-
+let data = storage.get('_horizon_v7', []);
 let activeIdx = null;
 let activeSubId = null;
 let categoryDragMoved = false;
 let openInspectorState = null;
 
-// Genvägar för att hålla koden kompatibel med resten av appen
-function saveAllState() {
-  storage.set('ver1', data);
-  storage.set('ver1_front', frontPageWidgets);
-}
 function createDefaultStyle() {
   return {
     // Colors
@@ -57,12 +47,12 @@ function createDefaultStyle() {
   };
 }
 
-let frontPageWidgets = storage.get('ver1_front', [
+let frontPageWidgets = storage.get('alvis_front_geo', [
   { id: 'geo-date', type: 'date', title: 'Today', pos: { x: 40, y: 30 }, size: { w: 160, h: 180 }, style: createDefaultStyle() },
   { id: 'geo-cal', type: 'cal', title: 'Calendar Grid', pos: { x: 230, y: 30 }, size: { w: 320, h: 180 }, style: createDefaultStyle() }
 ]);
 
-let widgetPresets = storage.get('ver1_widget_presets', [
+let widgetPresets = storage.get('alvis_widget_presets', [
   { id: 'preset-clean', name: 'Clean', style: createDefaultStyle() },
   { id: 'preset-bold', name: 'Bold', style: { ...createDefaultStyle(), borderWidth: '2px', headerHeight: '45px', headerBorderBottom: '2px solid #7b2cbf' } },
   { id: 'preset-minimal', name: 'Minimal', style: { ...createDefaultStyle(), borderWidth: '0px', headerHeight: '35px', headerBg: 'transparent', headerBorderBottom: 'none' } }

@@ -1,34 +1,68 @@
 /* --- TICKING SYSTEMS (Clock, Countdown, Timer) --- */
 
-// --- Global Ticking Systems ---
 function runGlobalTickingSystems() {
-  // SÄKERHETSSPÄRR: Om data inte har hunnit laddas in än, stoppa timern 
-  // så att den inte råkar skriva över din localStorage med en tom array []
-  if (!data || data.length === 0) return;
-
   const now = new Date();
+  const hrs = now.getHours();
+
+  // Dynamic Greeting
+  let currentGreeting = "Good Night";
+  if (hrs >= 5 && hrs < 12) currentGreeting = "wake the fuck up you lazy shit";
+  else if (hrs >= 12 && hrs < 17) currentGreeting = "i hope u got smth done today idiot";
+  else if (hrs >= 17 && hrs < 22) currentGreeting = "do u even deserve sleep??";
+
+  const greetingText = document.getElementById('greeting-text');
+  if (greetingText && activeIdx === null) {
+    greetingText.innerHTML = `${currentGreeting}>`;
+  }
+
   let changedTimeState = false;
 
-  // Uppdatera digitala klockor och timers i dina aktiva kategorier
-  if (activeIdx !== null && data[activeIdx] && data[activeIdx].widgets) {
-    data[activeIdx].widgets.forEach(w => {
-      if (w.type === 'clock' || w.type === 'timer' || w.type === 'pomodoro') {
-        // Enkel renderingstext-triggare för klockor
+  data.forEach((category, categoryIndex) => {
+    category.widgets.forEach((w, index) => {
+      const isVisibleCategory = activeIdx === categoryIndex;
+      if (w.type === 'clock') {
+        const face = isVisibleCategory ? document.getElementById(`clock-face-${index}`) : null;
+        if (face) {
+          face.style.fontSize = normalizeCssSize(w.clockFontSize, '2.2rem');
+          face.style.fontFamily = w.clockFontFamily || 'Inter, sans-serif';
+          face.innerText = formatClockFace(w);
+        }
+      }
+
+      if (w.type === 'countdown' && w.deadline) {
+        const distance = new Date(w.deadline).getTime() - new Date().getTime();
+        const face = isVisibleCategory ? document.getElementById(`count-face-${index}`) : null;
+        if (face) {
+          if (distance < 0) { face.innerText = "TIME OUT"; }
+          else {
+            const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((distance % (1000 * 60)) / 1000);
+            face.innerText = `${d}d ${h}h ${m}m ${s}s`;
+          }
+        }
+      }
+      if (w.type === 'timer' && w.timerRunning) {
+        w.timerElapsed += 1;
         changedTimeState = true;
+        const face = isVisibleCategory ? document.getElementById(`timer-face-${index}`) : null;
+        if (face) face.innerText = parseSecondsToTimerFace(w.timerElapsed);
+      }
+      if (w.type === 'pomodoro' && w.pomodoroRunning) {
+        w.pomodoroSeconds = Math.max((w.pomodoroSeconds || 0) - 1, 0);
+        if (w.pomodoroSeconds === 0) w.pomodoroRunning = false;
+        changedTimeState = true;
+        const face = isVisibleCategory ? document.getElementById(`pomodoro-face-${index}`) : null;
+        if (face) face.innerText = parseMinutesSeconds(w.pomodoroSeconds);
       }
     });
-  }
+  });
 
-  // Om tidskomponenter har ändrats, spara till ver1
-  if (changedTimeState) {
-    storage.set('ver1', data);
-  }
+  if (changedTimeState) storage.set('_horizon_v7', data);
 }
+setInterval(runGlobalTickingSystems, 1000);
 
-// Starta tick-systemet en gång i sekunden
-document.addEventListener('DOMContentLoaded', () => {
-  setInterval(runGlobalTickingSystems, 1000);
-});
 function parseSecondsToTimerFace(totalSecs) {
   const hrs = Math.floor(totalSecs / 3600).toString().padStart(2, '0');
   const mins = Math.floor((totalSecs % 3600) / 60).toString().padStart(2, '0');
