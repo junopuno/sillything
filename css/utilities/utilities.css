@@ -62,3 +62,176 @@ select {
 .hidden {
   display: none !important;
 }
+
+/* ==========================================================================
+   THEME MECHANICS & REPOSITORY
+   ========================================================================== */
+
+/* 1. Grundinställningar för body så att den faktiskt lyssnar på bakgrundsvariabler */
+body {
+  background-color: var(--page-bg-color, transparent);
+  background-image: var(--page-bg);
+  background-size: var(--page-bg-size, auto);
+  transition: background 0.3s ease;
+  /* Gör färgbytet mjukt! */
+}
+
+/* 2. TEMA: Standard Horizon (Om ingen klass är vald på body) */
+:root {
+  --page-bg: linear-gradient(135deg, #fff0f7 0%, #e2f7ff 55%, #fef5c3 100%);
+  --page-bg-size: auto;
+  --page-bg-color: transparent;
+}
+
+/* 3. TEMA: Pink Polkadot */
+body.theme-pink-polkadot {
+  --ui-accent: #ff6ec7;
+  --text-dark: #431d5b;
+  --text-muted: #8b6b9e;
+  /* Vi skriver över bakgrunden med prickar */
+  --page-bg: radial-gradient(#ffcee6 20%, transparent 20%) 0 0,
+    radial-gradient(#ffcee6 20%, transparent 20%) 8px 8px;
+  --page-bg-size: 16px 16px;
+  --page-bg-color: #fff0f6;
+}
+
+/* 4. TEMA: Cyber Mint */
+body.theme-cyber-mint {
+  --ui-accent: #00f5d4;
+  --text-dark: #1a1a2e;
+  --text-muted: #4e4e77;
+  --page-bg: linear-gradient(45deg, #e0fbf7 25%, #eef2f3 75%);
+  --page-bg-size: auto;
+  --page-bg-color: #e0fbf7;
+}
+
+/* 5. TEMA: Honey Lemon */
+body.theme-honey-lemon {
+  --ui-accent: #f59e0b;
+  --text-dark: #451a03;
+  --text-muted: #78350f;
+  --page-bg: radial-gradient(#fde047 15%, transparent 15%) 0 0;
+  --page-bg-size: 24px 24px;
+  --page-bg-color: #fefce8;
+}
+
+/* ==========================================================================
+   TEMA: Cyber Glow / Neon Glassmorphism
+   ========================================================================== */
+body.theme-cyber-glow {
+  --ui-accent: #00f2fe;
+  /* Lysande neon-cyan */
+  --text-dark: #ffffff;
+  /* Krispigt vit text för mörka paneler */
+  --text-muted: #94a3b8;
+  /* Dämpad silvergrå text */
+
+  /* Bakgrunden: Djupt mörkblå/svart med stora, svepande färgstarka neon-orber (lila, blå, rosa) */
+  --page-bg:
+    radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.25) 0%, transparent 40%),
+    radial-gradient(circle at 15% 75%, rgba(0, 242, 254, 0.2) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, #0b0f19 0%, #06080c 100%);
+  --page-bg-size: cover;
+  --page-bg-color: #06080c;
+}
+
+/* Panelerna/Widgets: Mörkt tonat glas med en ultratunn, ljusinfunderad gradient-border */
+body.theme-cyber-glow .widget {
+  background: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+
+  /* Neon-kant inspirerad av bildernas ramar */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-image: linear-gradient(135deg, rgba(0, 242, 254, 0.5), rgba(147, 51, 234, 0.3), rgba(236, 72, 153, 0.4)) 1 !important;
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.4),
+    inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  /* Stilren, skarpare kant */
+}
+
+/* Headers: Transparenta med en subtil linje under och neonfärgad text */
+body.theme-cyber-glow .widget-header {
+  background: rgba(255, 255, 255, 0.02) !important;
+  color: #00f2fe !important;
+  /* Cyan-lysande rubrik */
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 700 !important;
+  text-transform: tracking-wide;
+  border-bottom: 1px solid rgba(0, 242, 254, 0.2) !important;
+  text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+}
+
+/* Inputs, Selects och Textareas: Helt svarta med glödande kanter vid fokus */
+body.theme-cyber-glow input[type="text"],
+body.theme-cyber-glow select,
+body.theme-cyber-glow textarea {
+  background: rgba(5, 8, 15, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  transition: all 0.2s ease;
+}
+
+body.theme-cyber-glow input[type="text"]:focus,
+body.theme-cyber-glow select:focus {
+  border-color: #00f2fe !important;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.3) !important;
+  outline: none;
+}
+
+/* De olika knapparna sprids ut i de läckra färgerna från bilderna (Cyan, Lila, Rosa) */
+body.theme-cyber-glow .widget button:nth-of-type(3n+1),
+body.theme-cyber-glow .workspace-btn {
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%) !important;
+  border: none !important;
+  color: #030712 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.3) !important;
+  border-radius: 10px !important;
+}
+
+body.theme-cyber-glow .widget button:nth-of-type(3n+2) {
+  background: linear-gradient(135deg, #b5179e 0%, #7209b7 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 15px rgba(114, 9, 183, 0.3) !important;
+  border-radius: 10px !important;
+}
+
+body.theme-cyber-glow .widget button:nth-of-type(3n+3) {
+  background: linear-gradient(135deg, #f72585 0%, #ff4797 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 15px rgba(247, 37, 133, 0.3) !important;
+  border-radius: 10px !important;
+}
+
+/* Inre bodyn på widgetarna för skarp kontrast */
+body.theme-cyber-glow .widget-body {
+  background: transparent !important;
+  color: #f1f5f9 !important;
+}
+
+/* Överstyr sidopanelerna så att de flyter in i mörka temat perfekt */
+body.theme-cyber-glow #left-panel,
+body.theme-cyber-glow #right-panel {
+  background: rgba(10, 15, 26, 0.75) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+
+body.theme-cyber-glow .menu-item {
+  color: #94a3b8 !important;
+}
+
+body.theme-cyber-glow .menu-item.active {
+  color: #00f2fe !important;
+  background: rgba(0, 242, 254, 0.1) !important;
+  text-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
+}

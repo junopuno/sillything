@@ -570,3 +570,4 @@ function parseHtmlCalendarBlock(textCol) {
   }
   return `<div class="cal-view-wrapper"><div class="cal-title">${new Intl.DateTimeFormat('en-US', { month: 'long' }).format(now)}</div><div class="cal-grid-days">${daysBuffer}</div></div>`;
 }
+
