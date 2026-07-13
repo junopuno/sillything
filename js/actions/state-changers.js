@@ -580,7 +580,73 @@ function triggerPomodoro(wi, cmd) {
 // Category BG
 function updateCategoryBg(color, shouldRender = true) {
   data[activeIdx].bgColor = color;
-  document.documentElement.style.setProperty('--page-bg', color);
+  const bgStyle = resolveCategoryBackgroundStyle(data[activeIdx]);
+  document.documentElement.style.setProperty('--page-bg', bgStyle);
+  const mainContent = document.getElementById('main-content');
+  const canvas = document.getElementById('main-canvas');
+  if (mainContent) {
+    mainContent.style.background = bgStyle;
+    mainContent.style.backgroundColor = color;
+  }
+  if (canvas) {
+    canvas.style.background = bgStyle;
+    canvas.style.backgroundColor = color;
+  }
+  if (shouldRender) render();
+  else storage.set('_horizon_v7', data);
+}
+
+function updateCategoryBgType(bgType, shouldRender = true) {
+  data[activeIdx].bgType = bgType;
+  const bgStyle = resolveCategoryBackgroundStyle(data[activeIdx]);
+  document.documentElement.style.setProperty('--page-bg', bgStyle);
+  const mainContent = document.getElementById('main-content');
+  const canvas = document.getElementById('main-canvas');
+  if (mainContent) {
+    mainContent.style.background = bgStyle;
+    mainContent.style.backgroundColor = data[activeIdx].bgColor;
+  }
+  if (canvas) {
+    canvas.style.background = bgStyle;
+    canvas.style.backgroundColor = data[activeIdx].bgColor;
+  }
+  if (shouldRender) render();
+  else storage.set('_horizon_v7', data);
+}
+
+function updateCategoryBgGradient(start, end, shouldRender = true) {
+  data[activeIdx].bgGradientStart = start;
+  data[activeIdx].bgGradientEnd = end;
+  const bgStyle = resolveCategoryBackgroundStyle(data[activeIdx]);
+  document.documentElement.style.setProperty('--page-bg', bgStyle);
+  const mainContent = document.getElementById('main-content');
+  const canvas = document.getElementById('main-canvas');
+  if (mainContent) {
+    mainContent.style.background = bgStyle;
+    mainContent.style.backgroundColor = data[activeIdx].bgColor;
+  }
+  if (canvas) {
+    canvas.style.background = bgStyle;
+    canvas.style.backgroundColor = data[activeIdx].bgColor;
+  }
+  if (shouldRender) render();
+  else storage.set('_horizon_v7', data);
+}
+
+function updateCategoryBgAngle(angle, shouldRender = true) {
+  data[activeIdx].bgGradientAngle = angle;
+  const bgStyle = resolveCategoryBackgroundStyle(data[activeIdx]);
+  document.documentElement.style.setProperty('--page-bg', bgStyle);
+  const mainContent = document.getElementById('main-content');
+  const canvas = document.getElementById('main-canvas');
+  if (mainContent) {
+    mainContent.style.background = bgStyle;
+    mainContent.style.backgroundColor = data[activeIdx].bgColor;
+  }
+  if (canvas) {
+    canvas.style.background = bgStyle;
+    canvas.style.backgroundColor = data[activeIdx].bgColor;
+  }
   if (shouldRender) render();
   else storage.set('_horizon_v7', data);
 }

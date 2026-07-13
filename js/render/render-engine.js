@@ -275,7 +275,15 @@ function render() {
       <div class="tool-note">Select a category on the left to edit its settings.</div>`;
     document.documentElement.style.setProperty('--page-bg', 'linear-gradient(135deg, var(--gradient-1) 0%, var(--gradient-2) 100%)');
     document.documentElement.style.setProperty('--ui-accent', '#2563eb');
-    canvas.style.background = '';
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      mainContent.style.background = '';
+      mainContent.style.backgroundColor = '';
+    }
+    if (canvas) {
+      canvas.style.background = '';
+      canvas.style.backgroundColor = '';
+    }
 
     let html = renderTodayPanel();
     html += frontPageWidgets.map((w) => `
@@ -310,9 +318,18 @@ function render() {
     document.getElementById('category-index').innerText = category.name;
     document.getElementById('category-title-banner').innerText = category.name;
 
-    const categoryBg = category.bgColor || '#f8fafc';
+    const categoryBg = resolveCategoryBackgroundStyle(category);
     document.documentElement.style.setProperty('--page-bg', categoryBg);
     document.documentElement.style.setProperty('--ui-accent', category.accent || '#2563eb');
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+      mainContent.style.background = categoryBg;
+      mainContent.style.backgroundColor = category.bgColor || '#f8fafc';
+    }
+    if (canvas) {
+      canvas.style.background = categoryBg;
+      canvas.style.backgroundColor = category.bgColor || '#f8fafc';
+    }
 
     if (widgetControls) widgetControls.innerHTML = `
       <label>Widget type</label>
@@ -342,8 +359,19 @@ function render() {
       <button class="workspace-btn secondary-btn" onclick="triggerUploadImage()">Upload Image</button>`;
 
     if (canvasControls) canvasControls.innerHTML = `
+      <label>Canvas style</label>
+      <select id="cat-bg-type" onchange="updateCategoryBgType(this.value, false)">
+        <option value="solid" ${category.bgType === 'solid' ? 'selected' : ''}>Solid color</option>
+        <option value="gradient" ${category.bgType === 'gradient' ? 'selected' : ''}>Gradient</option>
+      </select>
       <label>Canvas color</label>
-      <input type="color" id="cat-bg-picker" value="${categoryBg}" oninput="updateCategoryBg(this.value, false)">
+      <input type="color" id="cat-bg-picker" value="${category.bgColor || '#f8fafc'}" oninput="updateCategoryBg(this.value, false)">
+      <label>Gradient start</label>
+      <input type="color" id="cat-bg-gradient-start" value="${category.bgGradientStart || '#ffffff'}" oninput="updateCategoryBgGradient(this.value, document.getElementById('cat-bg-gradient-end').value, false)">
+      <label>Gradient end</label>
+      <input type="color" id="cat-bg-gradient-end" value="${category.bgGradientEnd || '#e0f2fe'}" oninput="updateCategoryBgGradient(document.getElementById('cat-bg-gradient-start').value, this.value, false)">
+      <label>Angle</label>
+      <input type="range" min="0" max="360" step="5" value="${category.bgGradientAngle || 135}" oninput="updateCategoryBgAngle(this.value, false)">
       <label>Accent</label>
       <input type="color" value="${category.accent || '#2563eb'}" oninput="updateCategoryAccent(this.value)">
       <div class="tool-note">Customize the workspace canvas and accent for this category.</div>`;
