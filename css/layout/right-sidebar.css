@@ -1,14 +1,14 @@
 /* RIGHT PANEL SUGGESTIONS */
 .right-panel {
   width: var(--right-panel-width, 280px);
-  background: linear-gradient(180deg, rgba(255, 241, 255, 0.96), rgba(237, 247, 255, 0.98));
-  backdrop-filter: blur(12px);
-  border-left: 1px solid rgba(255, 111, 201, 0.25);
-  padding: var(--panel-padding, 16px);
+  background: linear-gradient(180deg, rgba(255, 242, 255, 0.96), rgba(235, 247, 255, 0.98));
+  backdrop-filter: blur(14px);
+  border-left: 1px solid rgba(255, 111, 201, 0.24);
+  padding: 18px 16px;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  border-radius: var(--panel-border-radius, 28px);
+  border-radius: 28px;
   box-shadow: var(--panel-shadow);
   height: 100vh;
   overflow-y: auto;
@@ -16,11 +16,12 @@
 }
 
 .tool-section {
-  border: 1px solid rgba(255, 111, 201, 0.28);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 111, 201, 0.26);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
   padding: 0;
   overflow: hidden;
+  box-shadow: 0 10px 24px rgba(255, 111, 201, 0.06);
 }
 
 .tool-section summary {
@@ -58,15 +59,47 @@
 
 .right-header {
   display: flex;
-  justify-content: space-around;
-  align-items: center;
-  margin-bottom: 24px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
 .right-header h3 {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 800;
   color: #4a2c62;
+}
+
+.right-header p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.theme-picker-card {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(255, 111, 201, 0.16);
+}
+
+.theme-picker-card label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+
+.theme-picker-card select {
+  border: 1px solid rgba(255, 111, 201, 0.2);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.9);
+  color: var(--text-dark);
 }
 
 

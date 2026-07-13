@@ -518,8 +518,28 @@ function addTask(wi) {
 
 function toggleTask(wi, ti) {
   const task = data[activeIdx].widgets[wi].tasks[ti];
+  const wasDone = Boolean(task.done);
   task.done = !task.done;
   task.status = task.done ? 'done' : 'todo';
+
+  if (activeIdx !== null && activeIdx !== 'planering') {
+    const category = data[activeIdx];
+    if (!category.rewardState) {
+      category.rewardState = { completedTasks: 0, streak: 0, badges: [] };
+    }
+    if (!wasDone && task.done) {
+      category.rewardState.completedTasks += 1;
+      category.rewardState.streak += 1;
+      const badgeList = category.rewardState.badges || [];
+      if (category.rewardState.completedTasks >= 1 && !badgeList.includes('sparkle')) badgeList.push('sparkle');
+      if (category.rewardState.completedTasks >= 5 && !badgeList.includes('star')) badgeList.push('star');
+      if (category.rewardState.completedTasks >= 10 && !badgeList.includes('crown')) badgeList.push('crown');
+      category.rewardState.badges = badgeList;
+    } else if (wasDone && !task.done) {
+      category.rewardState.streak = Math.max(0, category.rewardState.streak - 1);
+    }
+  }
+
   render();
 }
 

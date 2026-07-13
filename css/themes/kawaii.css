@@ -1,0 +1,16 @@
+
+/* Drag performance helpers */
+.widget, .widget-shell { will-change: transform; transform: translateZ(0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+
+/* During dragging reduce expensive visual effects to improve framerate */
+.widget.is-dragging, .widget-shell.is-dragging {
+  transition: none !important;
+  box-shadow: 0 6px 14px rgba(141,63,157,0.06) !important;
+  filter: none !important;
+  outline: none !important;
+}
+
+/* Slightly increase pointer responsiveness by disabling pointer-events on children while dragging */
+.widget.is-dragging * { pointer-events: none !important; }
+
+

@@ -16,19 +16,24 @@
 
     <!-- VÄNSTERPANEL -->
     <nav id="left-panel" class="left-panel">
-      <div class="panel-toggle-left" style="margin-right:25px" onclick="toggleLeftPanel()"><i class="fas fa-chevron-left"></i></div>
-      
+      <div class="panel-toggle-left" onclick="toggleLeftPanel()"><i class="fas fa-chevron-left"></i></div>
+      <div class="left-brand-block">
+        <div class="avatar large">✦</div>
+        <div>
+          <h3>little planner</h3>
+          <p>cute chaos dashboard</p>
+        </div>
       </div>
-      <div class="menu-section"style="margin-top: 140px;">
+      <div class="menu-section">
         <div id="frontpage-btn" class="menu-item" onclick="goHome()"><i class="far fa-sun"></i> frontpage</div>
         <div id="planering-btn" class="menu-item" onclick="goPlanering()"><i class="far fa-calendar-alt"></i> planering</div>
       </div>
       <div class="list-section">
-        <div class="section-title"style="color:white;filter:drop-shadow(0 0 px rgba(0,0,0,0.2));font-size:23px;background:rgba(40, 114, 244, 0.3);border-radius:10px; padding:5px"><i class="fas fa-list"style="font-size:20px;color:white"></i> <span style="filter:drop-shadow(0 1px 1px rgba(75, 64, 170, 0.7))">my lists</span>
-          
+        <div class="section-title">
+          <span><i class="fas fa-list"></i> my lists</span>
           <button onclick="addProject()"><i class="fas fa-plus"></i></button>
         </div>
-        <div id="nav-list" class="dynamic-lists" style="filter:drop-shadow(0 2px 1px rgba(124, 215, 139, 0.7))"></div>
+        <div id="nav-list" class="dynamic-lists"></div>
       </div>
     </nav>
 
@@ -36,17 +41,19 @@
 
     <!-- HUVUDINNEHÅLL -->
     <div id="main-content">
-      <header id="dashboard-header">
+      <header id="dashboard-header" class="hero-header">
         <div class="greeting-area">
+          <span class="hero-pill">✨ your soft little command center</span>
           <h1 id="greeting-text">pitbulls been here doing this too</h1>
           <p class="subtitle">let's lock the fuck in dawg</p>
         </div>
       </header>
 
-      <header id="category-header" class="hidden">
+      <header id="category-header" class="hero-header hidden">
         <div class="category-meta-block">
           <span id="category-index" class="cat-index-badge">category title</span>
           <h2 id="category-title-banner">category title</h2>
+          <div id="category-reward-banner" class="reward-banner"></div>
         </div>
       </header>
 
@@ -55,10 +62,20 @@
 
     <!-- HÖGERPANEL -->
     <aside id="right-panel" class="right-panel">
-      <div class="panel-toggle-right" style="margin-left:25px" onclick="toggleRightPanel()"><i class="fas fa-chevron-right"></i></div>
+      <div class="panel-toggle-right" onclick="toggleRightPanel()"><i class="fas fa-chevron-right"></i></div>
       <div class="right-header">
-        <h3><i class="fas fa-wand-magic-sparkles"></i> resources </h3>
-        
+        <div>
+          <h3><i class="fas fa-wand-magic-sparkles"></i> resources </h3>
+          <p>make it feel more yours</p>
+        </div>
+        <div class="theme-picker-card">
+          <label>Theme pack</label>
+          <select id="theme-pack-picker" onchange="applyThemePack(this.value)">
+            <option value="pastel">Pastel cloud</option>
+            <option value="candy">Candy pop</option>
+            <option value="cozy">Cozy cottage</option>
+          </select>
+        </div>
       </div>
    
       <div id="quick-widget-dock" class="dock-content" style="margin-bottom:10px">

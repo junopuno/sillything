@@ -87,3 +87,45 @@
   box-shadow: 0 10px 15px -3px rgba(232, 96, 151, 0.35);
 }
 
+.journal-widget,
+.quote-widget,
+.mood-widget {
+  display: grid;
+  gap: 8px;
+  height: 100%;
+}
+
+.journal-textarea,
+.quote-textarea {
+  width: 100%;
+  min-height: 120px;
+  border: 1px solid rgba(255, 122, 182, 0.2);
+  border-radius: 16px;
+  padding: 10px;
+  background: rgba(255,255,255,0.86);
+  color: var(--text-dark);
+  resize: vertical;
+}
+
+.journal-widget select,
+.quote-widget input,
+.mood-widget select {
+  border: 1px solid rgba(255, 122, 182, 0.2);
+  border-radius: 999px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.9);
+  color: var(--text-dark);
+}
+
+.mood-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(255, 122, 182, 0.18), rgba(126, 203, 255, 0.2));
+  color: #7c2d92;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+

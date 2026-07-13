@@ -19,6 +19,9 @@
 @import url("./css/utilities/utilities.css");
 @import url("./css/widgets/full-planner.css");
 
+/* Theme import: kawaii pastel overrides (loaded last to override defaults) */
+@import url("./css/themes/kawaii.css");
+
 
 /* Import UI: toast notifications and progress */
 /* Toast container uses theme variables */

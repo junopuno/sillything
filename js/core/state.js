@@ -137,6 +137,24 @@ function createDefaultWidget(type) {
   }
   if (type === 'habits') base.title = 'HABITS';
   if (type === 'goals') base.title = 'GOALS';
+  if (type === 'journal') {
+    base.title = 'JOURNAL';
+    base.size = { w: 320, h: 260 };
+    base.journalText = 'Write your thoughts...';
+    base.journalMood = 'cozy';
+  }
+  if (type === 'quote') {
+    base.title = 'QUOTE';
+    base.size = { w: 320, h: 220 };
+    base.quoteText = 'You can make a lovely little world today.';
+    base.quoteAuthor = 'self';
+  }
+  if (type === 'mood') {
+    base.title = 'MOOD';
+    base.size = { w: 280, h: 220 };
+    base.mood = 'sparkly';
+    base.ambience = 'soft';
+  }
   if (type === 'media') {
     base.title = 'MEDIA';
     base.size = { w: 360, h: 280 };
@@ -203,7 +221,7 @@ function normalizeWidget(widget) {
 }
 
 function normalizeCategory(category, index) {
-  return {
+  const normalized = {
     name: category.name || `Ny kategori ${index + 1}`,
     icon: category.icon || 'fa-folder',
     iconImage: category.iconImage || '',
@@ -218,6 +236,16 @@ function normalizeCategory(category, index) {
     size: category.size || { w: 200, h: 120 },
     widgets: (category.widgets || []).filter(widget => widget.type !== 'progress').map(normalizeWidget)
   };
+
+  if (!normalized.rewardState) {
+    normalized.rewardState = {
+      completedTasks: 0,
+      streak: 0,
+      badges: []
+    };
+  }
+
+  return normalized;
 }
 
 data = data.map(normalizeCategory);

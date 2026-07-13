@@ -20,6 +20,9 @@ function renderWidgetBody(w, i) {
     case 'graph': return renderGraphWidget(w, i);
     case 'media': return renderMedia(w, i);
     case 'goals': return renderGoals(w, i);
+    case 'journal': return renderJournal(w, i);
+    case 'quote': return renderQuote(w, i);
+    case 'mood': return renderMood(w, i);
     default: return `<textarea onchange="updateWidgetProp(${i},'content',this.value)" class="plain-note">${escapeHtml(w.content || '')}</textarea>`;
   }
 }
@@ -343,6 +346,43 @@ function renderGoals(w, i) {
       <input type="number" value="${w.goalCurrent || 0}" onchange="updateWidgetProp(${i},'goalCurrent',Number(this.value))">
       <label>Target</label>
       <input type="number" value="${w.goalTarget || 1}" onchange="updateWidgetProp(${i},'goalTarget',Number(this.value))">
+    </div>`;
+}
+
+function renderJournal(w, i) {
+  return `
+    <div class="journal-widget">
+      <select onchange="updateWidgetProp(${i},'journalMood',this.value)">
+        <option value="cozy" ${w.journalMood === 'cozy' ? 'selected' : ''}>Cozy</option>
+        <option value="dreamy" ${w.journalMood === 'dreamy' ? 'selected' : ''}>Dreamy</option>
+        <option value="bright" ${w.journalMood === 'bright' ? 'selected' : ''}>Bright</option>
+      </select>
+      <textarea class="journal-textarea" onchange="updateWidgetProp(${i},'journalText',this.value)">${escapeHtml(w.journalText || '')}</textarea>
+    </div>`;
+}
+
+function renderQuote(w, i) {
+  return `
+    <div class="quote-widget">
+      <textarea class="quote-textarea" onchange="updateWidgetProp(${i},'quoteText',this.value)">${escapeHtml(w.quoteText || '')}</textarea>
+      <input type="text" value="${escapeHtml(w.quoteAuthor || '')}" placeholder="Author" onchange="updateWidgetProp(${i},'quoteAuthor',this.value)">
+    </div>`;
+}
+
+function renderMood(w, i) {
+  return `
+    <div class="mood-widget">
+      <select onchange="updateWidgetProp(${i},'mood',this.value)">
+        <option value="sparkly" ${w.mood === 'sparkly' ? 'selected' : ''}>Sparkly</option>
+        <option value="calm" ${w.mood === 'calm' ? 'selected' : ''}>Calm</option>
+        <option value="focus" ${w.mood === 'focus' ? 'selected' : ''}>Focus</option>
+      </select>
+      <select onchange="updateWidgetProp(${i},'ambience',this.value)">
+        <option value="soft" ${w.ambience === 'soft' ? 'selected' : ''}>Soft ambience</option>
+        <option value="rain" ${w.ambience === 'rain' ? 'selected' : ''}>Rain</option>
+        <option value="cafe" ${w.ambience === 'cafe' ? 'selected' : ''}>Cafe</option>
+      </select>
+      <div class="mood-pill">${escapeHtml(w.mood || 'sparkly')} · ${escapeHtml(w.ambience || 'soft')}</div>
     </div>`;
 }
 

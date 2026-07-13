@@ -7,7 +7,11 @@ function initPhysics() {
     inertia: true,
     allowFrom: '.widget-header, .image-cover-widget',
     listeners: {
-      start(event) { event.target.style.zIndex = "1000"; },
+      start(event) { 
+        const t = event.target;
+        t.style.zIndex = "1000";
+        t.classList.add('is-dragging');
+      },
       move(event) {
         const target = event.target;
         const prevX = parseFloat(target.getAttribute('data-x')) || 0;
@@ -17,7 +21,8 @@ function initPhysics() {
         // batch DOM updates via requestAnimationFrame for smoother rendering
         if (target._dragRaf) cancelAnimationFrame(target._dragRaf);
         target._dragRaf = requestAnimationFrame(() => {
-          target.style.transform = `translate(${x}px, ${y}px)`;
+          // use translate3d to promote to its own layer for GPU compositing
+          target.style.transform = `translate3d(${x}px, ${y}px, 0)`;
           target.setAttribute('data-x', x); target.setAttribute('data-y', y);
         });
         if (activeIdx === null) {
@@ -28,7 +33,9 @@ function initPhysics() {
         }
       },
       end(event) {
-        event.target.style.zIndex = "";
+        const t = event.target;
+        t.style.zIndex = "";
+        t.classList.remove('is-dragging');
         storage.set('_horizon_v7', data);
         storage.set('alvis_front_geo', frontPageWidgets);
       }

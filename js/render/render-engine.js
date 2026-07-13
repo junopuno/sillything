@@ -313,10 +313,18 @@ function render() {
     const category = data[activeIdx];
     const selectedSubId = activeSubId === 'uncategorized' ? null : activeSubId;
     const stats = getPlannerStats(category, activeSubId === null ? undefined : selectedSubId);
+    const rewardState = category.rewardState || { completedTasks: 0, streak: 0, badges: [] };
     dashHeader.classList.add('hidden');
     catHeader.classList.remove('hidden');
     document.getElementById('category-index').innerText = category.name;
     document.getElementById('category-title-banner').innerText = category.name;
+    const rewardBanner = document.getElementById('category-reward-banner');
+    if (rewardBanner) {
+      rewardBanner.innerHTML = `
+        <span>✨ ${rewardState.completedTasks} tasks done</span>
+        <span>🔥 streak ${rewardState.streak}</span>
+        <span>${(rewardState.badges || []).length ? `🏅 ${rewardState.badges.join(' · ')}` : '🏷️ no badges yet'}</span>`;
+    }
 
     const categoryBg = resolveCategoryBackgroundStyle(category);
     document.documentElement.style.setProperty('--page-bg', categoryBg);
@@ -353,6 +361,9 @@ function render() {
         <option value="graph">Graphing</option>
         <option value="media">File Gallery</option>
         <option value="goals">Goal Tracker</option>
+        <option value="journal">Journal</option>
+        <option value="quote">Quote Card</option>
+        <option value="mood">Mood + Ambience</option>
       </select>
       <button class="workspace-btn" onclick="addWidget()">+ Add Module</button>
       <button class="workspace-btn secondary-btn" onclick="addTaskWidget()">+ Quick Task Panel</button>
