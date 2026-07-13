@@ -125,8 +125,37 @@ function goHome() {
 }
 function delWid(i) { data[activeIdx].widgets.splice(i, 1); render(); }
 function updateWidgetProp(wi, prop, val) {
-  if (prop === 'clockFontSize') val = normalizeCssSize(val, '2.2rem');
+  if (prop === 'clockFontSize' || prop === 'timerFontSize' || prop === 'pomodoroFontSize') {
+    val = normalizeCssSize(val, '3.4rem');
+  }
+  if (prop === 'notificationVolume') {
+    val = normalizeNotificationVolume(val, 0.7);
+  }
   data[activeIdx].widgets[wi][prop] = val;
+  render();
+}
+
+function setNotificationSoundFile(wi, file) {
+  if (!file || activeIdx === null) return;
+  const widget = data[activeIdx].widgets[wi];
+  if (!widget) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    widget.notificationSound = 'custom';
+    widget.notificationAudioSrc = reader.result;
+    widget.notificationAudioName = file.name || 'custom-audio';
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearNotificationSoundFile(wi) {
+  if (activeIdx === null) return;
+  const widget = data[activeIdx].widgets[wi];
+  if (!widget) return;
+  widget.notificationSound = 'bell';
+  widget.notificationAudioSrc = '';
+  widget.notificationAudioName = '';
   render();
 }
 function appendCalculatorToken(wi, token) {

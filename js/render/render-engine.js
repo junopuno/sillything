@@ -329,6 +329,7 @@ function render() {
         <option value="calendar">Calendar</option>
         <option value="schedule">Hourly Schedule</option>
         <option value="habits">Habit Tracker</option>
+        <option value="spotify">Spotify Player</option>
         <option value="youtube">YouTube Video</option>
         <option value="image">Image Cover</option>
         <option value="calculator">Calculator</option>

@@ -90,6 +90,11 @@ function createDefaultWidget(type) {
     pomodoroRunning: false,
     goalTarget: 10,
     goalCurrent: 3,
+    notificationSound: 'bell',
+    notificationVolume: 0.7,
+    notificationAudioSrc: '',
+    notificationAudioName: '',
+    spotifyUrl: '',
     mediaItems: [],
     embedUrl: '',
     youtubeUrl: '',
@@ -111,13 +116,24 @@ function createDefaultWidget(type) {
   }
 
   if (type === 'list') base.tasks = [createDefaultTask('Add first task')];
-  if (type === 'pomodoro') base.title = 'POMODORO';
+  if (type === 'pomodoro') {
+    base.title = 'POMODORO';
+    base.pomodoroFontSize = '3.4rem';
+  }
+  if (type === 'timer') {
+    base.title = 'STOPWATCH';
+    base.timerFontSize = '3.4rem';
+  }
   if (type === 'clock') {
     base.title = 'CLOCK';
-    base.clockFontSize = '2.2rem';
+    base.clockFontSize = '3.4rem';
     base.clockFontFamily = 'Inter, sans-serif';
     base.clockFormat = '24';
     base.clockShowSeconds = true;
+  }
+  if (type === 'spotify') {
+    base.title = 'SPOTIFY';
+    base.size = { w: 360, h: 280 };
   }
   if (type === 'habits') base.title = 'HABITS';
   if (type === 'goals') base.title = 'GOALS';

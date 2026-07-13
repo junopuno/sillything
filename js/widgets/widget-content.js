@@ -9,6 +9,7 @@ function renderWidgetBody(w, i) {
     case 'countdown': return renderCountdown(w, i);
     case 'timer': return renderTimer(w, i);
     case 'pomodoro': return renderPomodoro(w, i);
+    case 'spotify': return renderSpotify(w, i);
     case 'calendar': return parseHtmlCalendarBlock(w.style?.textCol);
     case 'schedule': return renderSchedule(w, i);
     case 'links': return renderLinks(w, i);
@@ -113,11 +114,34 @@ function renderCountdown(w, i) {
     <div class="time-widget-stack">
       <input type="datetime-local" value="${escapeHtml(w.deadline || '')}" onchange="updateWidgetProp(${i},'deadline',this.value)">
       <div id="count-face-${i}" class="digital-clock-face">${w.deadline ? 'Loading...' : 'Set deadline'}</div>
+      <div class="clock-options-grid">
+        <label>
+          Sound
+          <select onchange="updateWidgetProp(${i},'notificationSound',this.value)">
+            <option value="bell" ${w.notificationSound === 'bell' ? 'selected' : ''}>Actual bell</option>
+            <option value="soft" ${w.notificationSound === 'soft' ? 'selected' : ''}>Soft</option>
+            <option value="chime" ${w.notificationSound === 'chime' ? 'selected' : ''}>Chime</option>
+            <option value="ding" ${w.notificationSound === 'ding' ? 'selected' : ''}>Ding</option>
+            <option value="pulse" ${w.notificationSound === 'pulse' ? 'selected' : ''}>Pulse</option>
+            <option value="custom" ${w.notificationSound === 'custom' ? 'selected' : ''}>Custom audio</option>
+            <option value="none" ${w.notificationSound === 'none' ? 'selected' : ''}>None</option>
+          </select>
+        </label>
+        <label>
+          Volume
+          <input type="range" min="0" max="100" step="1" value="${Math.round(normalizeNotificationVolume(w.notificationVolume, 0.7) * 100)}" onchange="updateWidgetProp(${i},'notificationVolume',this.value)">
+        </label>
+        <label class="sound-upload-field">
+          <span>${w.notificationAudioName ? `Custom: ${escapeHtml(w.notificationAudioName)}` : 'Upload custom sound'}</span>
+          <input type="file" accept="audio/*" onchange="setNotificationSoundFile(${i}, this.files[0])">
+          ${w.notificationAudioSrc ? `<button type="button" class="time-mini-btn" onclick="clearNotificationSoundFile(${i})">Remove</button>` : ''}
+        </label>
+      </div>
     </div>`;
 }
 
 function renderClock(w, i) {
-  const clockFontSize = normalizeCssSize(w.clockFontSize, '2.2rem');
+  const clockFontSize = normalizeCssSize(w.clockFontSize, '3.4rem');
   const clockText = new Date().toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
@@ -159,20 +183,49 @@ function renderClock(w, i) {
 }
 
 function renderTimer(w, i) {
+  const timerFontSize = normalizeCssSize(w.timerFontSize, '3.4rem');
   return `
     <div class="time-widget-stack">
-      <div id="timer-face-${i}" class="digital-clock-face">${parseSecondsToTimerFace(w.timerElapsed || 0)}</div>
+      <div id="timer-face-${i}" class="digital-clock-face" style="font-size:${escapeHtml(timerFontSize)}">${parseSecondsToTimerFace(w.timerElapsed || 0)}</div>
       <div class="time-btn-cluster">
         <button class="time-mini-btn" onclick="triggerTimerState(${i},'toggle')">${w.timerRunning ? 'Pause' : 'Start'}</button>
         <button class="time-mini-btn" onclick="triggerTimerState(${i},'clear')">Reset</button>
+      </div>
+      <div class="clock-options-grid">
+        <label>
+          Text size
+          <input type="text" value="${escapeHtml(timerFontSize)}" placeholder="e.g. 42px, 5rem" onchange="updateWidgetProp(${i},'timerFontSize',this.value)">
+        </label>
+        <label>
+          Sound
+          <select onchange="updateWidgetProp(${i},'notificationSound',this.value)">
+            <option value="bell" ${w.notificationSound === 'bell' ? 'selected' : ''}>Actual bell</option>
+            <option value="soft" ${w.notificationSound === 'soft' ? 'selected' : ''}>Soft</option>
+            <option value="chime" ${w.notificationSound === 'chime' ? 'selected' : ''}>Chime</option>
+            <option value="ding" ${w.notificationSound === 'ding' ? 'selected' : ''}>Ding</option>
+            <option value="pulse" ${w.notificationSound === 'pulse' ? 'selected' : ''}>Pulse</option>
+            <option value="custom" ${w.notificationSound === 'custom' ? 'selected' : ''}>Custom audio</option>
+            <option value="none" ${w.notificationSound === 'none' ? 'selected' : ''}>None</option>
+          </select>
+        </label>
+        <label>
+          Volume
+          <input type="range" min="0" max="100" step="1" value="${Math.round(normalizeNotificationVolume(w.notificationVolume, 0.7) * 100)}" onchange="updateWidgetProp(${i},'notificationVolume',this.value)">
+        </label>
+        <label class="sound-upload-field">
+          <span>${w.notificationAudioName ? `Custom: ${escapeHtml(w.notificationAudioName)}` : 'Upload custom sound'}</span>
+          <input type="file" accept="audio/*" onchange="setNotificationSoundFile(${i}, this.files[0])">
+          ${w.notificationAudioSrc ? `<button type="button" class="time-mini-btn" onclick="clearNotificationSoundFile(${i})">Remove</button>` : ''}
+        </label>
       </div>
     </div>`;
 }
 
 function renderPomodoro(w, i) {
+  const pomodoroFontSize = normalizeCssSize(w.pomodoroFontSize, '3.4rem');
   return `
     <div class="time-widget-stack">
-      <div id="pomodoro-face-${i}" class="digital-clock-face">${parseMinutesSeconds(w.pomodoroSeconds || 0)}</div>
+      <div id="pomodoro-face-${i}" class="digital-clock-face" style="font-size:${escapeHtml(pomodoroFontSize)}">${parseMinutesSeconds(w.pomodoroSeconds || 0)}</div>
       <div class="time-btn-cluster">
         <button class="time-mini-btn" onclick="triggerPomodoro(${i},'toggle')">${w.pomodoroRunning ? 'Pause' : 'Start'}</button>
         <button class="time-mini-btn" onclick="triggerPomodoro(${i},'add15')">15m</button>
@@ -180,6 +233,61 @@ function renderPomodoro(w, i) {
         <button class="time-mini-btn" onclick="triggerPomodoro(${i},'add60')">60m</button>
         <button class="time-mini-btn" onclick="triggerPomodoro(${i},'reset')">Reset</button>
       </div>
+      <div class="clock-options-grid">
+        <label>
+          Text size
+          <input type="text" value="${escapeHtml(pomodoroFontSize)}" placeholder="e.g. 42px, 5rem" onchange="updateWidgetProp(${i},'pomodoroFontSize',this.value)">
+        </label>
+        <label>
+          Sound
+          <select onchange="updateWidgetProp(${i},'notificationSound',this.value)">
+            <option value="bell" ${w.notificationSound === 'bell' ? 'selected' : ''}>Actual bell</option>
+            <option value="soft" ${w.notificationSound === 'soft' ? 'selected' : ''}>Soft</option>
+            <option value="chime" ${w.notificationSound === 'chime' ? 'selected' : ''}>Chime</option>
+            <option value="ding" ${w.notificationSound === 'ding' ? 'selected' : ''}>Ding</option>
+            <option value="pulse" ${w.notificationSound === 'pulse' ? 'selected' : ''}>Pulse</option>
+            <option value="custom" ${w.notificationSound === 'custom' ? 'selected' : ''}>Custom audio</option>
+            <option value="none" ${w.notificationSound === 'none' ? 'selected' : ''}>None</option>
+          </select>
+        </label>
+        <label>
+          Volume
+          <input type="range" min="0" max="100" step="1" value="${Math.round(normalizeNotificationVolume(w.notificationVolume, 0.7) * 100)}" onchange="updateWidgetProp(${i},'notificationVolume',this.value)">
+        </label>
+        <label class="sound-upload-field">
+          <span>${w.notificationAudioName ? `Custom: ${escapeHtml(w.notificationAudioName)}` : 'Upload custom sound'}</span>
+          <input type="file" accept="audio/*" onchange="setNotificationSoundFile(${i}, this.files[0])">
+          ${w.notificationAudioSrc ? `<button type="button" class="time-mini-btn" onclick="clearNotificationSoundFile(${i})">Remove</button>` : ''}
+        </label>
+      </div>
+    </div>`;
+}
+
+function getSpotifyEmbedUrl(rawUrl = '') {
+  const cleanUrl = String(rawUrl || '').trim();
+  if (!cleanUrl) return '';
+  try {
+    const parsed = new URL(cleanUrl);
+    const parts = parsed.pathname.split('/').filter(Boolean);
+    const type = parts[0] === 'playlist' || parts[0] === 'album' || parts[0] === 'track' ? parts[0] : null;
+    const id = parts[1] || '';
+    if (!type || !id) return '';
+    return `https://open.spotify.com/embed/${type}/${id}`;
+  } catch (error) {
+    return '';
+  }
+}
+
+function renderSpotify(w, i) {
+  const embedUrl = getSpotifyEmbedUrl(w.spotifyUrl || '');
+  return `
+    <div class="spotify-widget">
+      <input type="url" value="${escapeHtml(w.spotifyUrl || '')}" placeholder="Paste a Spotify playlist or song URL" onchange="updateWidgetProp(${i},'spotifyUrl',this.value)">
+      ${embedUrl ? `
+        <iframe class="spotify-frame" src="${embedUrl}" title="Spotify player" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      ` : `
+        <div class="embed-empty-state"><i class="fab fa-spotify"></i><span>Paste a Spotify playlist or song link above</span></div>
+      `}
     </div>`;
 }
 
@@ -329,6 +437,14 @@ function parseYoutubeVideoId(url = '') {
   } catch (error) {
     return '';
   }
+}
+
+if (typeof window !== 'undefined') {
+  window.getSpotifyEmbedUrl = getSpotifyEmbedUrl;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { getSpotifyEmbedUrl };
 }
 
 function renderCalculator(w, i) {
