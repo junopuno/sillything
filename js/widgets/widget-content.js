@@ -739,10 +739,14 @@ function renderMp3PlayerMarkup(widget, index) {
   const activePlaylistName = widget.activePlaylistName;
   const tracks = widget.playlists[activePlaylistName] || [];
   const currentIndex = widget.currentTrackIndex || 0;
+  const currentTrack = tracks[currentIndex];
 
   const isShuffle = widget.shuffleActive === true;
   const globalRegistry = window._mp3Registry && window._mp3Registry[index];
   const isPlaying = globalRegistry ? globalRegistry.isPlaying : false;
+
+  // Dynamic "Now Playing" track text
+  const displayTitle = currentTrack ? currentTrack.name : "☆ LOADED NOTHING YET~ ☆";
 
   const playlistNames = Object.keys(widget.playlists);
   const playlistItemsHtml = playlistNames.map(pName => {
@@ -826,19 +830,19 @@ function renderMp3PlayerMarkup(widget, index) {
       .widget-close-corner-btn:active { transform: translateY(2px); box-shadow: none; }
       
       /* Control Headers Row */
-      .y2k-top-deck { display: flex; align-items: center; justify-content: flex-start; gap: 12px; margin-right: 30px; }
-      .y2k-media-buttons { display: flex; gap: 6px; align-items: center; }
+      .y2k-top-deck { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-right: 24px; }
+      .y2k-media-buttons { display: flex; gap: 4px; align-items: center; }
       .y2k-media-buttons button {
         background: linear-gradient(to bottom, #7fe5ff 0%, #00bfff 100%);
         border: 3px solid #000000;
         border-radius: 50%;
-        width: 36px;
-        height: 36px;
+        width: 34px;
+        height: 34px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 13px;
+        font-size: 11px;
         color: #ffffff;
         text-shadow: 2px 2px 0px #000000;
         box-shadow: 0 4px 0 #000000, inset 0 3px 4px rgba(255,255,255,0.8);
@@ -847,17 +851,40 @@ function renderMp3PlayerMarkup(widget, index) {
       .y2k-media-buttons button:active { transform: translateY(4px); box-shadow: none; }
       .y2k-media-buttons button.play-trigger {
         background: linear-gradient(to bottom, #ff99cc 0%, #ff007f 100%);
-        width: 44px;
-        height: 44px;
-        font-size: 16px;
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+      }
+
+      /* High-Visibility Liquid Crystal Screen Matrix */
+      .y2k-display-screen {
+        flex: 1;
+        max-width: 50%;
+        background: #111111;
+        border-radius: 10px;
+        border: 3px solid #000000;
+        padding: 6px;
+        text-align: center;
+        box-shadow: inset 0 4px 6px rgba(0,0,0,0.9);
+      }
+      .y2k-screen-title {
+        font-size: 11px;
+        color: #00ffcc;
+        font-family: monospace;
+        font-weight: 900;
+        text-transform: uppercase;
+        text-shadow: 0 0 8px #00ffcc;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       
       .y2k-utility-buttons button {
         background: linear-gradient(to bottom, #cc99ff 0%, #9933ff 100%);
         border: 3px solid #000000;
         border-radius: 10px;
-        padding: 6px 12px;
-        font-size: 11px;
+        padding: 6px 10px;
+        font-size: 10px;
         font-weight: 900;
         color: #ffffff;
         text-shadow: 1px 1px 0px #000000;
@@ -870,7 +897,7 @@ function renderMp3PlayerMarkup(widget, index) {
         text-shadow: none;
       }
 
-      /* Divided Dual Pane Framing (Inspired layout from image_c0f92e.jpg) */
+      /* Divided Dual Pane Framing */
       .y2k-split-body {
         display: flex;
         flex: 1;
@@ -927,13 +954,11 @@ function renderMp3PlayerMarkup(widget, index) {
       }
     </style>
 
-    <!-- The onerror attribute serves as a bulletproof hook that runs instantly even in sandboxed environments -->
     <div class="y2k-player-container" id="y2k-player-instance-${index}">
       <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display:none;" onerror="
         (function(){
           const myNode = document.getElementById('y2k-player-instance-${index}');
           if (!myNode) return;
-          // 1. Force the parent outer card components to go completely transparent
           let shell = myNode.parentElement;
           while(shell && !shell.classList.contains('widget') && !shell.classList.contains('grid-stack-item-content') && shell.tagName !== 'BODY') {
             shell.style.background = 'transparent';
@@ -949,33 +974,33 @@ function renderMp3PlayerMarkup(widget, index) {
             shell.style.border = 'none';
             shell.style.boxShadow = 'none';
             shell.style.padding = '0px';
-            // Hide dashboard built-in text title frames if visible
             const oldHead = shell.querySelector('.widget-header') || shell.querySelector('.widget-title');
             if (oldHead) oldHead.style.display = 'none';
           }
         })();
       ">
 
-      <!-- Corner X Button invokes multi-paradigm frame removal hooks -->
-      <button class="widget-close-corner-btn" title="Delete Player Widget" onclick="
+      <!-- Corner X Button -->
+      <button class="widget-close-corner-btn" type="button" title="Delete Player Widget" onclick="
         event.stopPropagation();
         killActiveAudioInstance(${index});
         
-        // Strategy A: Fire framework native click events on original shell close buttons if hidden nearby
-        const nativeClose = this.closest('.grid-stack-item, .widget').querySelector('.delete-widget, .remove-widget, .widget-remove, .close-btn');
-        if (nativeClose) {
-          nativeClose.click();
+        // Find framework structural removal points
+        const widgetCard = this.closest('.grid-stack-item, .widget, [data-widget-id]');
+        const nativeCloseBtn = widgetCard ? widgetCard.querySelector('.delete-widget, .remove-widget, .widget-remove, .close-btn, .fa-trash-alt') : null;
+        
+        if (nativeCloseBtn) {
+          nativeCloseBtn.click();
         } else if (typeof deleteWidget === 'function') {
-          // Strategy B: Fallback array pointer deletion routine
           deleteWidget(${index});
         } else {
-          // Strategy C: Absolute UI safety fallback drops it from view completely
-          this.closest('.y2k-player-container').parentElement.style.display = 'none';
+          this.closest('.y2k-player-container').parentElement.remove();
         }
       ">
         <i class="fas fa-times"></i>
       </button>
 
+      <!-- 1. TOP CONTROLS DECK WITH RESTORED NOW PLAYING SCREEN -->
       <div class="y2k-top-deck">
         <div class="y2k-media-buttons">
           <button onclick="prevTrack(${index})" title="Back"><i class="fas fa-backward"></i></button>
@@ -985,13 +1010,19 @@ function renderMp3PlayerMarkup(widget, index) {
           <button onclick="nextTrack(${index})" title="Next"><i class="fas fa-forward"></i></button>
         </div>
         
+        <!-- Now Playing Digital Core Matrix Window Restored! -->
+        <div class="y2k-display-screen">
+          <div class="y2k-screen-title">📟 ${escapeHtml(displayTitle)}</div>
+        </div>
+        
         <div class="y2k-utility-buttons">
           <button class="${isShuffle ? 'shuffle-on' : ''}" onclick="toggleShuffle(${index})" title="Mix Random">
-            <i class="fas fa-random"></i> SHUFFLE
+            <i class="fas fa-random"></i> MIX
           </button>
         </div>
       </div>
 
+      <!-- 2. TWO-COLUMN INTERFACE GRID (From image_c0f92e.jpg) -->
       <div class="y2k-split-body">
         <div class="y2k-left-pane">
           <div class="y2k-pane-header">Playlists</div>
@@ -1016,6 +1047,7 @@ function renderMp3PlayerMarkup(widget, index) {
         </div>
       </div>
 
+      <!-- 3. INPUT COMPONENT ATTACHMENTS FOOTER -->
       <div class="y2k-footer-bar">
         <div class="y2k-inputs">
           <input type="text" id="mp3-url-${index}" placeholder="Paste stream web audio link here...">
