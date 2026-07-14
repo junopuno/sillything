@@ -135,6 +135,15 @@ function createDefaultWidget(type) {
     base.title = 'SPOTIFY';
     base.size = { w: 360, h: 280 };
   }
+
+  
+  if (type === 'mp3') {
+    base.title = 'MP3 PLAYER';
+    base.size = { w: 340, h: 320 }; // Sets a perfect initial grid footprint
+    base.tracks = [];               // Track registry container array
+    base.currentTrackIndex = 0;
+  }
+
   if (type === 'habits') base.title = 'HABITS';
   if (type === 'goals') base.title = 'GOALS';
   if (type === 'journal') {

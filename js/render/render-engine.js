@@ -406,6 +406,7 @@ function render() {
         <option value="habits">Habit Tracker</option>
         <option value="spotify">Spotify Player</option>
         <option value="youtube">YouTube Video</option>
+        <option value="mp3">Custom MP3 Player</option>
         <option value="image">Image Cover</option>
         <option value="calculator">Calculator</option>
         <option value="graph">Graphing</option>
@@ -471,6 +472,27 @@ function render() {
             ${renderCalculator(w, i)}
         </div>`;
       }
+
+      if (w.type === 'mp3') {
+        const widgetStyle = `transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w || 340}px; height:${w.size.h || 320}px; resize: both; overflow: hidden; min-width: 260px; min-height: 240px; --widget-scale:${getWidgetScale(w)}; background:${w.style.bodyBg}; color:${w.style.textCol}; border-color:${w.style.borderCol}; border-width:${w.style.borderWidth}; border-radius:${w.style.cornerRadius};`;
+
+        return `
+        <div class="widget" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" style="${widgetStyle}">
+            <div class="widget-header" style="${getWidgetHeaderStyleString(w.style)}">
+                <input type="text" value="${escapeHtml(w.title)}" onchange="updateWidgetProp(${i}, 'title', this.value)">
+                <div class="widget-controls-group">
+                    ${renderWidgetSectionMenu(category, i, w)}
+                    <i class="fas fa-ellipsis-v" onclick="openInspector('cat', ${i})"></i>
+                    <i class="fas fa-copy" onclick="duplicateWidget(${i})"></i>
+                    <i class="fas fa-times" onclick="delWid(${i})" style="color:#ef4444;"></i>
+                </div>
+            </div>
+            <div id="inspect-cat-${i}" class="design-inspector hidden">${renderInspectorMarkup('cat', i, w.style)}</div>
+            <div class="widget-body" style="${getWidgetBodyStyleString(w.style)}">
+                ${renderMp3PlayerMarkup(w, i)}
+            </div>
+        </div>`;
+      }
       // ==========================================
       // --- HÄR UNDER ÄR DIN GAMLA KOD HELT ORÖRD FÖR ALLA ANDRA WIDGETS ---
       const widgetClass = w.type === 'image' ? 'widget image-widget' : 'widget';
@@ -510,7 +532,26 @@ function render() {
     setCanvasHtmlPreservingEmbeddedWidgets(canvas, categoryHtml, category);
   }
 
+
   initPhysics();
+  if (w.type === 'mp3') {
+    const widgetStyle = `transform: translate(${w.pos.x}px, ${w.pos.y}px); width:${w.size.w || 340}px; height:${w.size.h || 320}px; resize: both; overflow: hidden; min-width: 260px; min-height: 240px;`;
+    return `
+    <div class="widget" data-index="${i}" data-x="${w.pos.x}" data-y="${w.pos.y}" style="${widgetStyle}">
+        <div class="widget-header" style="${getWidgetHeaderStyleString(w.style)}">
+            <input type="text" value="${escapeHtml(w.title)}" onchange="updateWidgetProp(${i}, 'title', this.value)">
+            <div class="widget-controls-group">
+                ${renderWidgetSectionMenu(category, i, w)}
+                <i class="fas fa-ellipsis-v" onclick="openInspector('cat', ${i})"></i>
+                <i class="fas fa-copy" onclick="duplicateWidget(${i})"></i>
+                <i class="fas fa-times" onclick="delWid(${i})" style="color:#ef4444;"></i>
+            </div>
+        </div>
+        <div class="widget-body" style="${getWidgetBodyStyleString(w.style)}">
+            ${renderMp3PlayerMarkup(w, i)}
+        </div>
+    </div>`;
+  }
 
   if (typeof drawGraphWidgets === 'function') {
     requestAnimationFrame(drawGraphWidgets);
@@ -523,3 +564,4 @@ function render() {
 
   storage.set('_horizon_v7', data);
 }
+

@@ -23,6 +23,7 @@ function renderWidgetBody(w, i) {
     case 'journal': return renderJournal(w, i);
     case 'quote': return renderQuote(w, i);
     case 'mood': return renderMood(w, i);
+    case 'mp3player': return renderMp3Player(w, i);
     default: return `<textarea onchange="updateWidgetProp(${i},'content',this.value)" class="plain-note">${escapeHtml(w.content || '')}</textarea>`;
   }
 }
@@ -726,4 +727,101 @@ function parseHtmlCalendarBlock(textCol) {
   }
   return `<div class="cal-view-wrapper"><div class="cal-title">${new Intl.DateTimeFormat('en-US', { month: 'long' }).format(now)}</div><div class="cal-grid-days">${daysBuffer}</div></div>`;
 }
+function renderMp3PlayerMarkup(widget, index) {
+  const tracks = widget.tracks || [];
+  const currentIndex = widget.currentTrackIndex || 0;
+  const currentTrack = tracks[currentIndex];
 
+  // Custom states
+  const isShuffle = widget.shuffleActive === true;
+  const globalRegistry = window._mp3Registry && window._mp3Registry[index];
+  const isPlaying = globalRegistry ? globalRegistry.isPlaying : false;
+
+  // Interface dynamics
+  const displayTitle = currentTrack ? currentTrack.name : "No song loaded";
+  const displayCover = (currentTrack && currentTrack.coverImg) ? currentTrack.coverImg : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100%25' height='100%25' fill='%23ffd1dc'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='40'>🎵</text></svg>";
+
+  const spinClass = isPlaying ? "fa-spin" : "";
+  const controlIcon = isPlaying ? "fa-pause" : "fa-play";
+  const shuffleClass = isShuffle ? "shuffle-on" : "";
+
+  // Dynamic playlist generation
+  let playlistItemsMarkup = '<div class="queue-item empty-state"><span>No tracks added yet~ 💕</span></div>';
+  if (tracks.length > 0) {
+    playlistItemsMarkup = tracks.map((track, tIdx) => {
+      const activeClass = tIdx === currentIndex ? 'is-active' : '';
+      return `
+        <div class="queue-item ${activeClass}">
+          <span class="queue-name" onclick="playSpecificTrack(${index}, ${tIdx})">
+            <i class="fas fa-music"></i> ${escapeHtml(track.name)}
+          </span>
+          <i class="fas fa-trash-alt delete-track-btn" onclick="deleteTrack(${index}, ${tIdx}, event)"></i>
+        </div>
+      `;
+    }).join('');
+  }
+
+  return `
+    <style>
+      .mp3-cute-container { display: flex; flex-direction: column; height: 100%; font-family: system-ui, sans-serif; gap: 8px; box-sizing: border-box; }
+      .mp3-now-playing { display: flex; gap: 12px; background: rgba(255,255,255,0.4); padding: 10px; border-radius: 14px; align-items: center; border: 1px dashed rgba(0,0,0,0.05); }
+      .album-art-wrapper { position: relative; width: 64px; height: 64px; min-width: 64px; border-radius: 50%; overflow: hidden; border: 3px solid #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); animation: rotateDisc 12s linear infinite; animation-play-state: paused; }
+      .album-art-wrapper.fa-spin { animation-play-state: running; }
+      .album-art { width: 100%; height: 100%; object-fit: cover; }
+      @keyframes rotateDisc { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      .track-meta { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+      .track-title { font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .track-status { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+      .mp3-controls { display: flex; gap: 6px; align-items: center; justify-content: center; width: 100%; }
+      .mp3-controls button { border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s ease; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: inherit; }
+      .mp3-controls button:active { transform: scale(0.92); }
+      .mp3-controls button.operator { width: 44px; height: 44px; font-size: 16px; background: linear-gradient(135deg, #ffd1dc 0%, #ffb7c5 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+      .mp3-controls button.shuffle-btn { border-radius: 10px; font-size: 12px; width: 32px; height: 32px; opacity: 0.5; }
+      .mp3-controls button.shuffle-btn.shuffle-on { opacity: 1; background: #e0e7ff; border: 1px solid #c7d2fe; color: #4338ca; }
+      .mp3-playlist-queue { flex: 1; overflow-y: auto; background: rgba(255,255,255,0.25); border-radius: 12px; padding: 4px; display: flex; flex-direction: column; gap: 2px; border: 1px solid rgba(0,0,0,0.02); min-height: 70px; }
+      .queue-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-radius: 8px; font-size: 12px; cursor: pointer; gap: 8px; }
+      .queue-item:hover { background: rgba(255,255,255,0.5); }
+      .queue-item.is-active { background: #ffd1dc !important; font-weight: bold; color: #b45309; }
+      .queue-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 6px; flex: 1; }
+      .delete-track-btn { opacity: 0.3; padding: 4px; cursor: pointer; transition: opacity 0.2s; }
+      .delete-track-btn:hover { opacity: 1; color: #ef4444; }
+      .empty-state { justify-content: center; opacity: 0.5; padding: 16px 0; pointer-events: none; }
+    </style>
+
+    <div class="mp3-cute-container">
+      <!-- Media Info -->
+      <div class="mp3-now-playing">
+        <div class="album-art-wrapper ${spinClass}">
+          <img class="album-art" src="${displayCover}" alt="cover">
+        </div>
+        <div class="track-meta">
+          <strong class="track-title">${escapeHtml(displayTitle)}</strong>
+          <span class="track-status">${isPlaying ? 'Now Playing~' : 'Paused'}</span>
+        </div>
+      </div>
+
+      <!-- Control Deck -->
+      <div class="mp3-controls">
+        <button class="shuffle-btn ${shuffleClass}" title="Shuffle Mode" onclick="toggleShuffle(${index})">
+          <i class="fas fa-random"></i>
+        </button>
+        <button onclick="prevTrack(${index})"><i class="fas fa-backward"></i></button>
+        <button class="operator" onclick="togglePlayTrack(${index})"><i class="fas ${controlIcon}"></i></button>
+        <button onclick="nextTrack(${index})"><i class="fas fa-forward"></i></button>
+      </div>
+
+      <!-- Dynamic Queue -->
+      <div class="mp3-playlist-queue">
+        ${playlistItemsMarkup}
+      </div>
+
+      <!-- Action Row -->
+      <div class="mp3-upload-row">
+        <label style="display:block; text-align:center; cursor:pointer; background:#fff; padding: 8px; border-radius:10px; font-size:12px; font-weight:600; box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px dashed #ffd1dc;">
+          <i class="fas fa-plus-circle"></i> Add Cute Music Tracks
+          <input type="file" accept="audio/mp3, audio/mpeg" multiple style="display:none;" onchange="handleMp3Upload(this.files, ${index})">
+        </label>
+      </div>
+    </div>
+  `;
+}

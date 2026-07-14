@@ -140,3 +140,136 @@ input[type="range"] {
   width: fit-content;
   padding: 6px 8px;
 }
+/* --- CUSTOM MP3 WIDGET STYLES (SHELL ADAPTED) --- */
+
+/* Stretch container to utilize the full height and width of .widget-body */
+.mp3-widget {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Now playing block: uses relative sizing for the font to support your shell scale */
+.mp3-now-playing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(255, 240, 250, 0.8), rgba(255, 255, 255, 0.9));
+  border: 1px solid var(--kawaii-border);
+  border-radius: 14px;
+  box-shadow: inset 0 2px 0 var(--kawaii-gloss);
+  flex-shrink: 0;
+  /* Prevents header compression when list gets long */
+}
+
+.mp3-now-playing .fa-music {
+  font-size: 1.4em;
+  /* Uses em scaling relative to shell body font-size */
+  color: var(--kawaii-accent);
+}
+
+.track-meta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.track-title {
+  font-size: 0.85em;
+  color: var(--kawaii-deep);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-status {
+  font-size: 0.68em;
+  color: var(--kawaii-accent);
+}
+
+/* Reset cluster layout bounds so it scales gracefully */
+.mp3-controls {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.mp3-active-btn {
+  background: linear-gradient(180deg, var(--kawaii-pink-3) 0%, #ff8cc6 100%) !important;
+  color: #fff !important;
+}
+
+.mp3-upload-row {
+  flex-shrink: 0;
+}
+
+.mp3-upload-row .upload-label {
+  display: block;
+  cursor: pointer;
+}
+
+/* Queue List Container adapted to coexist with .widget-body's scroll limits */
+.mp3-playlist-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  /* Takes up remaining workspace area */
+  min-height: 80px;
+  /* Safeguards structural layout on tiny sizes */
+  overflow-y: auto;
+  /* Independent nested tracking queue scrollbar */
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.4);
+  padding: 6px;
+  border: 1px solid var(--kawaii-border);
+}
+
+/* Nested custom scrollbar design matching the global workspace styling rules */
+.mp3-playlist-queue::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mp3-playlist-queue::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mp3-playlist-queue::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.mp3-playlist-queue::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.queue-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.75em;
+  color: var(--kawaii-deep);
+  transition: background 0.2s;
+}
+
+.queue-item:hover {
+  background: var(--kawaii-pink-1);
+}
+
+.queue-item.is-active {
+  background: var(--kawaii-pink-2);
+  font-weight: bold;
+}
+
+.queue-name {
+  cursor: pointer;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
