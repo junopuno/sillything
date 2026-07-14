@@ -256,3 +256,303 @@ function killActiveAudioInstance(widgetIndex) {
     registry.isPlaying = false;
   }
 }
+// 1. HANDLER FOR AUDIO STRINGS / PASSED WEB LINKS
+function addAudioUrlTrack(widgetIndex) {
+  const inputEl = document.getElementById(`mp3-url-${widgetIndex}`);
+  if (!inputEl || !inputEl.value.trim()) return;
+
+  let url = inputEl.value.trim();
+  const widget = data[activeIdx].widgets[widgetIndex];
+  if (!widget.tracks) widget.tracks = [];
+
+  // Convert typical GitHub file-view pages into direct file streaming pointers
+  if (url.includes('github.com') && url.includes('/blob/')) {
+    url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+  }
+
+  let songName = "Web Track " + (widget.tracks.length + 1);
+  try {
+    const cleanUrl = url.split('?')[0];
+    const filename = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
+    if (filename) {
+      songName = decodeURIComponent(filename).replace(/\.[^/.]+$/, "");
+    }
+  } catch (e) { }
+
+  const cuteFallbacks = ['#ffd1dc', '#dcfce7', '#fef3c7', '#e0e7ff', '#f3e8ff'];
+  const selectedColor = cuteFallbacks[Math.floor(Math.random() * cuteFallbacks.length)];
+  const fallbackSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100%25' height='100%25' fill='${encodeURIComponent(selectedColor)}'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='40'>🎵</text></svg>`;
+
+  widget.tracks.push({
+    name: songName,
+    srcUrl: url,
+    coverImg: fallbackSvg,
+    isLocalFile: false // Flagged as a permanent string link
+  });
+
+  if ((!widget.currentTrackIndex && widget.currentTrackIndex !== 0) || widget.currentTrackIndex >= widget.tracks.length) {
+    widget.currentTrackIndex = 0;
+  }
+
+  inputEl.value = '';
+
+  if (typeof saveData === 'function') saveData();
+  if (typeof render === 'function') render();
+}
+
+// 2. HANDLER FOR LOCAL DEVICE FILE ATTACHMENTS
+function handleLocalFileUpload(files, widgetIndex) {
+  if (!files || files.length === 0) return;
+
+  const widget = data[activeIdx].widgets[widgetIndex];
+  if (!widget.tracks) widget.tracks = [];
+
+  const cuteFallbacks = ['#ffd1dc', '#dcfce7', '#fef3c7', '#e0e7ff', '#f3e8ff'];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const localBlobUrl = URL.createObjectURL(file); // Keeps local file streaming lightning-fast
+    const selectedColor = cuteFallbacks[Math.floor(Math.random() * cuteFallbacks.length)];
+    const fallbackSvg = `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100%25' height='100%25' fill='${encodeURIComponent(selectedColor)}'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='40'>🎵</text></svg>`;
+
+    widget.tracks.push({
+      name: file.name.replace(/\.[^/.]+$/, ""),
+      srcUrl: localBlobUrl,
+      coverImg: fallbackSvg,
+      isLocalFile: true // Tagged to remind the dashboard across context loops
+    });
+  }
+
+  if ((!widget.currentTrackIndex && widget.currentTrackIndex !== 0) || widget.currentTrackIndex >= widget.tracks.length) {
+    widget.currentTrackIndex = 0;
+  }
+
+  // Save structural arrays (local items will show up to be reloaded if dropped, web items stick permanently)
+  if (typeof saveData === 'function') saveData();
+  if (typeof render === 'function') render();
+}
+
+// 1. SWITCH CURRENT ACTIVE PLAYLIST TARGET
+function switchPlaylist(widgetIndex, playlistName) {
+  const widget = data[activeIdx].widgets[widgetIndex];
+  widget.activePlaylistName = playlistName;
+  widget.currentTrackIndex = 0; // Reset active queue position focus
+
+  // Pause tracking session running on old playlist
+  killActiveAudioInstance(widgetIndex);
+
+  if (typeof render === 'function') render();
+}
+
+// 2. CREATE A BRAND NEW EMPTY PLAYLIST STRING KEY
+function createNewPlaylist(widgetIndex) {
+  const inputEl = document.getElementById(`new-playlist-input-${widgetIndex}`);
+  if (!inputEl || !inputEl.value.trim()) return;
+
+  const rawName = inputEl.value.trim();
+  const widget = data[activeIdx].widgets[widgetIndex];
+
+  if (!widget.playlists) widget.playlists = {};
+
+  // Do not overwrite existing playlist structures accidentally
+  if (!widget.playlists[rawName]) {
+    widget.playlists[rawName] = [];
+  }
+
+  widget.activePlaylistName = rawName;
+  widget.currentTrackIndex = 0;
+  inputEl.value = '';
+
+  if (typeof saveData === 'function') saveData();
+  if (typeof render === 'function') render();
+}
+
+// 3. DELETE A PLAYLIST
+function deletePlaylist(widgetIndex, playlistName, event) {
+  if (event) event.stopPropagation(); // Avoid firing outer select rows trigger
+
+  const widget = data[activeIdx].widgets[widgetIndex];
+  if (!widget.playlists || !widget.playlists[playlistName]) return;
+
+  // Clean runtime instance audio track if active playlist is dropped
+  if (widget.activePlaylistName === playlistName) {
+    killActiveAudioInstance(widgetIndex);
+  }
+
+  delete widget.playlists[playlistName];
+
+  // Roll active playlist fallback pointer assignment to index zero entry keys
+  const remainingPlaylists = Object.keys(widget.playlists);
+  if (widget.activePlaylistName === playlistName) {
+    widget.activePlaylistName = remainingPlaylists[0];
+    widget.currentTrackIndex = 0;
+  }
+
+  if (typeof saveData === 'function') saveData();
+  if (typeof render === 'function') render();
+}
+
+// TRACK LOADER PATCH FOR WEB URL LINKS
+function addAudioUrlTrack(widgetIndex) {
+  const inputEl = document.getElementById(`mp3-url-${widgetIndex}`);
+  if (!inputEl || !inputEl.value.trim()) return;
+
+  let url = inputEl.value.trim();
+  const widget = data[activeIdx].widgets[widgetIndex];
+
+  // Safe init checks
+  if (!widget.playlists) widget.playlists = {};
+  if (!widget.activePlaylistName) widget.activePlaylistName = "✿ cute-mix-1 ✿";
+  if (!widget.playlists[widget.activePlaylistName]) widget.playlists[widget.activePlaylistName] = [];
+
+  const currentPlaylistTracks = widget.playlists[widget.activePlaylistName];
+
+  if (url.includes('github.com') && url.includes('/blob/')) {
+    url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+  }
+
+  let songName = "Web Track " + (currentPlaylistTracks.length + 1);
+  try {
+    const cleanUrl = url.split('?')[0];
+    const filename = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
+    if (filename) songName = decodeURIComponent(filename).replace(/\.[^/.]+$/, "");
+  } catch (e) { }
+
+  currentPlaylistTracks.push({ name: songName, srcUrl: url });
+  inputEl.value = '';
+
+  if (typeof saveData === 'function') saveData();
+  if (typeof render === 'function') render();
+}
+
+// TRACK LOADER PATCH FOR LOCAL ATTACHMENTS
+function handleLocalFileUpload(files, widgetIndex) {
+  if (!files || files.length === 0) return;
+  const widget = data[activeIdx].widgets[widgetIndex];
+
+  if (!widget.playlists) widget.playlists = {};
+  if (!widget.activePlaylistName) widget.activePlaylistName = "✿ cute-mix-1 ✿";
+  if (!widget.playlists[widget.activePlaylistName]) widget.playlists[widget.activePlaylistName] = [];
+
+  const currentPlaylistTracks = widget.playlists[widget.activePlaylistName];
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    currentPlaylistTracks.push({
+      name: file.name.replace(/\.[^/.]+$/, ""),
+      srcUrl: URL.createObjectURL(file)
+    });
+  }
+
+  if (typeof saveData === 'function') saveData();
+  if (typeof render === 'function') render();
+}
+
+// INDIVIDUAL TRACK DELETION METHOD UPDATED FOR MULTI-PLAYLIST
+function deleteTrack(widgetIndex, trackIndex, event) {
+  if (event) event.stopPropagation();
+  const widget = data[activeIdx].widgets[widgetIndex];
+  if (!widget.playlists || !widget.activePlaylistName) return;
+
+  const currentPlaylistTracks = widget.playlists[widget.activePlaylistName] || [];
+  const registry = window._mp3Registry[widgetIndex];
+
+  if (widget.currentTrackIndex === trackIndex && registry && registry.isPlaying) {
+    registry.audio.pause();
+    registry.isPlaying = false;
+  }
+
+  currentPlaylistTracks.splice(trackIndex, 1);
+
+  if (widget.currentTrackIndex >= currentPlaylistTracks.length) {
+    widget.currentTrackIndex = Math.max(0, currentPlaylistTracks.length - 1);
+  }
+
+  if (registry && currentPlaylistTracks.length > 0 && widget.currentTrackIndex === trackIndex) {
+    registry.audio.src = currentPlaylistTracks[widget.currentTrackIndex].srcUrl;
+  }
+
+  if (typeof saveData === 'function') saveData();
+  if (typeof render === 'function') render();
+}
+
+// OVERRIDE FOR NEXT/PREVIOUS ROUTINES
+function nextTrack(widgetIndex) {
+  const widget = data[activeIdx].widgets[widgetIndex];
+  const currentPlaylistTracks = widget.playlists ? (widget.playlists[widget.activePlaylistName] || []) : [];
+  if (currentPlaylistTracks.length === 0) return;
+
+  if (widget.shuffleActive && currentPlaylistTracks.length > 1) {
+    let randomIndex = widget.currentTrackIndex;
+    while (randomIndex === widget.currentTrackIndex) {
+      randomIndex = Math.floor(Math.random() * currentPlaylistTracks.length);
+    }
+    widget.currentTrackIndex = randomIndex;
+  } else {
+    widget.currentTrackIndex = ((widget.currentTrackIndex || 0) + 1) % currentPlaylistTracks.length;
+  }
+  killActiveAudioInstance(widgetIndex);
+  togglePlayTrack(widgetIndex);
+}
+
+function prevTrack(widgetIndex) {
+  const widget = data[activeIdx].widgets[widgetIndex];
+  const currentPlaylistTracks = widget.playlists ? (widget.playlists[widget.activePlaylistName] || []) : [];
+  if (currentPlaylistTracks.length === 0) return;
+
+  if (widget.shuffleActive && currentPlaylistTracks.length > 1) {
+    let randomIndex = widget.currentTrackIndex;
+    while (randomIndex === widget.currentTrackIndex) {
+      randomIndex = Math.floor(Math.random() * currentPlaylistTracks.length);
+    }
+    widget.currentTrackIndex = randomIndex;
+  } else {
+    widget.currentTrackIndex = ((widget.currentTrackIndex || 0) - 1 + currentPlaylistTracks.length) % currentPlaylistTracks.length;
+  }
+  killActiveAudioInstance(widgetIndex);
+  togglePlayTrack(widgetIndex);
+}
+
+function togglePlayTrack(widgetIndex) {
+  const widget = data[activeIdx].widgets[widgetIndex];
+  const currentPlaylistTracks = widget.playlists ? (widget.playlists[widget.activePlaylistName] || []) : [];
+  if (currentPlaylistTracks.length === 0) return;
+
+  let registry = window._mp3Registry[widgetIndex];
+  if (!registry) {
+    registry = { audio: new Audio(), isPlaying: false };
+    window._mp3Registry[widgetIndex] = registry;
+    registry.audio.addEventListener('ended', () => nextTrack(widgetIndex));
+  }
+
+  const track = currentPlaylistTracks[widget.currentTrackIndex || 0];
+  if (registry.audio.src !== track.srcUrl) {
+    registry.audio.src = track.srcUrl;
+  }
+
+  if (registry.isPlaying) {
+    registry.audio.pause();
+    registry.isPlaying = false;
+    if (typeof render === 'function') render();
+  } else {
+    registry.audio.play().then(() => {
+      registry.isPlaying = true;
+      if (typeof render === 'function') render();
+    }).catch(err => console.error("Playback block handled:", err));
+  }
+}
+
+function killActiveAudioInstance(widgetIndex) {
+  const registry = window._mp3Registry[widgetIndex];
+  if (registry) {
+    registry.audio.pause();
+    registry.isPlaying = false;
+  }
+}
+
+function playSpecificTrack(widgetIndex, trackIndex) {
+  const widget = data[activeIdx].widgets[widgetIndex];
+  widget.currentTrackIndex = trackIndex;
+  killActiveAudioInstance(widgetIndex);
+  togglePlayTrack(widgetIndex);
+}

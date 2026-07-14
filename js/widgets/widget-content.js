@@ -727,99 +727,303 @@ function parseHtmlCalendarBlock(textCol) {
   }
   return `<div class="cal-view-wrapper"><div class="cal-title">${new Intl.DateTimeFormat('en-US', { month: 'long' }).format(now)}</div><div class="cal-grid-days">${daysBuffer}</div></div>`;
 }
-function renderMp3PlayerMarkup(widget, index) {
-  const tracks = widget.tracks || [];
-  const currentIndex = widget.currentTrackIndex || 0;
-  const currentTrack = tracks[currentIndex];
 
-  // Custom states
+function renderMp3PlayerMarkup(widget, index) {
+  if (!widget.playlists) {
+    widget.playlists = { "✿ cute-mix-1 ✿": widget.tracks || [] };
+  }
+  if (!widget.activePlaylistName) {
+    widget.activePlaylistName = Object.keys(widget.playlists)[0];
+  }
+
+  const activePlaylistName = widget.activePlaylistName;
+  const tracks = widget.playlists[activePlaylistName] || [];
+  const currentIndex = widget.currentTrackIndex || 0;
+
   const isShuffle = widget.shuffleActive === true;
   const globalRegistry = window._mp3Registry && window._mp3Registry[index];
   const isPlaying = globalRegistry ? globalRegistry.isPlaying : false;
 
-  // Interface dynamics
-  const displayTitle = currentTrack ? currentTrack.name : "No song loaded";
-  const displayCover = (currentTrack && currentTrack.coverImg) ? currentTrack.coverImg : "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100%25' height='100%25' fill='%23ffd1dc'/><text x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='40'>🎵</text></svg>";
+  const playlistNames = Object.keys(widget.playlists);
+  const playlistItemsHtml = playlistNames.map(pName => {
+    const isSelected = pName === activePlaylistName ? 'is-active-playlist' : '';
+    const deleteBtn = playlistNames.length > 1
+      ? `<i class="fas fa-times delete-playlist-x" title="Delete Playlist" onclick="deletePlaylist(${index}, '${escapeHtml(pName)}', event)"></i>`
+      : '';
 
-  const spinClass = isPlaying ? "fa-spin" : "";
-  const controlIcon = isPlaying ? "fa-pause" : "fa-play";
-  const shuffleClass = isShuffle ? "shuffle-on" : "";
+    return `
+      <div class="y2k-playlist-row ${isSelected}" onclick="switchPlaylist(${index}, '${escapeHtml(pName)}')">
+        <span class="playlist-text-title">💿 ${escapeHtml(pName)}</span>
+        ${deleteBtn}
+      </div>
+    `;
+  }).join('');
 
-  // Dynamic playlist generation
-  let playlistItemsMarkup = '<div class="queue-item empty-state"><span>No tracks added yet~ 💕</span></div>';
+  let tracksRowsHtml = `
+    <tr>
+      <td colspan="2" style="text-align:center; padding:30px; font-size:12px; font-weight:900; color:#ff3399;">
+        🧷 Playlist empty!<br>Load tracks below~ 🎧
+      </td>
+    </tr>`;
+
   if (tracks.length > 0) {
-    playlistItemsMarkup = tracks.map((track, tIdx) => {
-      const activeClass = tIdx === currentIndex ? 'is-active' : '';
+    tracksRowsHtml = tracks.map((track, tIdx) => {
+      const activeClass = tIdx === currentIndex ? 'is-active-row' : '';
       return `
-        <div class="queue-item ${activeClass}">
-          <span class="queue-name" onclick="playSpecificTrack(${index}, ${tIdx})">
-            <i class="fas fa-music"></i> ${escapeHtml(track.name)}
-          </span>
-          <i class="fas fa-trash-alt delete-track-btn" onclick="deleteTrack(${index}, ${tIdx}, event)"></i>
-        </div>
+        <tr class="track-row-item ${activeClass}" onclick="playSpecificTrack(${index}, ${tIdx})">
+          <td class="cell-name">★ ${escapeHtml(track.name)}</td>
+          <td class="cell-actions" onclick="event.stopPropagation();">
+            <button class="y2k-row-delete-btn" title="Remove Track" onclick="deleteTrack(${index}, ${tIdx}, event)">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </td>
+        </tr>
       `;
     }).join('');
   }
 
   return `
     <style>
-      .mp3-cute-container { display: flex; flex-direction: column; height: 100%; font-family: system-ui, sans-serif; gap: 8px; box-sizing: border-box; }
-      .mp3-now-playing { display: flex; gap: 12px; background: rgba(255,255,255,0.4); padding: 10px; border-radius: 14px; align-items: center; border: 1px dashed rgba(0,0,0,0.05); }
-      .album-art-wrapper { position: relative; width: 64px; height: 64px; min-width: 64px; border-radius: 50%; overflow: hidden; border: 3px solid #fff; box-shadow: 0 4px 6px rgba(0,0,0,0.05); animation: rotateDisc 12s linear infinite; animation-play-state: paused; }
-      .album-art-wrapper.fa-spin { animation-play-state: running; }
-      .album-art { width: 100%; height: 100%; object-fit: cover; }
-      @keyframes rotateDisc { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      .track-meta { display: flex; flex-direction: column; min-width: 0; flex: 1; }
-      .track-title { font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .track-status { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
-      .mp3-controls { display: flex; gap: 6px; align-items: center; justify-content: center; width: 100%; }
-      .mp3-controls button { border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s ease; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: inherit; }
-      .mp3-controls button:active { transform: scale(0.92); }
-      .mp3-controls button.operator { width: 44px; height: 44px; font-size: 16px; background: linear-gradient(135deg, #ffd1dc 0%, #ffb7c5 100%); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-      .mp3-controls button.shuffle-btn { border-radius: 10px; font-size: 12px; width: 32px; height: 32px; opacity: 0.5; }
-      .mp3-controls button.shuffle-btn.shuffle-on { opacity: 1; background: #e0e7ff; border: 1px solid #c7d2fe; color: #4338ca; }
-      .mp3-playlist-queue { flex: 1; overflow-y: auto; background: rgba(255,255,255,0.25); border-radius: 12px; padding: 4px; display: flex; flex-direction: column; gap: 2px; border: 1px solid rgba(0,0,0,0.02); min-height: 70px; }
-      .queue-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-radius: 8px; font-size: 12px; cursor: pointer; gap: 8px; }
-      .queue-item:hover { background: rgba(255,255,255,0.5); }
-      .queue-item.is-active { background: #ffd1dc !important; font-weight: bold; color: #b45309; }
-      .queue-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 6px; flex: 1; }
-      .delete-track-btn { opacity: 0.3; padding: 4px; cursor: pointer; transition: opacity 0.2s; }
-      .delete-track-btn:hover { opacity: 1; color: #ef4444; }
-      .empty-state { justify-content: center; opacity: 0.5; padding: 16px 0; pointer-events: none; }
+      /* Y2K Bubblegum Main Wrapper Frame */
+      .y2k-player-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        box-sizing: border-box;
+        font-family: 'Arial Black', 'Impact', system-ui, sans-serif;
+        gap: 10px;
+        background: #ff66b2 !important; 
+        padding: 14px;
+        border-radius: 20px;
+        border: 4px solid #000000;
+        box-shadow: inset -4px -4px 0px rgba(0,0,0,0.25), 
+                    inset 4px 4px 0px #ffffff, 
+                    6px 6px 0px #000000;
+      }
+
+      /* Native Corner Deletion Cross Button */
+      .widget-close-corner-btn {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: #ff0055;
+        border: 3px solid #000000;
+        color: #ffffff;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+        box-shadow: 2px 2px 0px #000000;
+        z-index: 999;
+      }
+      .widget-close-corner-btn:hover { background: #ff3333; transform: scale(1.1); }
+      .widget-close-corner-btn:active { transform: translateY(2px); box-shadow: none; }
+      
+      /* Control Headers Row */
+      .y2k-top-deck { display: flex; align-items: center; justify-content: flex-start; gap: 12px; margin-right: 30px; }
+      .y2k-media-buttons { display: flex; gap: 6px; align-items: center; }
+      .y2k-media-buttons button {
+        background: linear-gradient(to bottom, #7fe5ff 0%, #00bfff 100%);
+        border: 3px solid #000000;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 13px;
+        color: #ffffff;
+        text-shadow: 2px 2px 0px #000000;
+        box-shadow: 0 4px 0 #000000, inset 0 3px 4px rgba(255,255,255,0.8);
+        position: relative;
+      }
+      .y2k-media-buttons button:active { transform: translateY(4px); box-shadow: none; }
+      .y2k-media-buttons button.play-trigger {
+        background: linear-gradient(to bottom, #ff99cc 0%, #ff007f 100%);
+        width: 44px;
+        height: 44px;
+        font-size: 16px;
+      }
+      
+      .y2k-utility-buttons button {
+        background: linear-gradient(to bottom, #cc99ff 0%, #9933ff 100%);
+        border: 3px solid #000000;
+        border-radius: 10px;
+        padding: 6px 12px;
+        font-size: 11px;
+        font-weight: 900;
+        color: #ffffff;
+        text-shadow: 1px 1px 0px #000000;
+        box-shadow: 0 4px 0 #000000, inset 0 2px 4px rgba(255,255,255,0.6);
+        cursor: pointer;
+      }
+      .y2k-utility-buttons button.shuffle-on {
+        background: linear-gradient(to bottom, #bfff00 0%, #80cc00 100%);
+        color: #000000;
+        text-shadow: none;
+      }
+
+      /* Divided Dual Pane Framing (Inspired layout from image_c0f92e.jpg) */
+      .y2k-split-body {
+        display: flex;
+        flex: 1;
+        border: 3px solid #000000;
+        border-radius: 12px;
+        background: #ffffff;
+        min-height: 140px;
+        overflow: hidden;
+        box-shadow: 4px 4px 0px #000000;
+      }
+      
+      .y2k-left-pane { width: 38%; border-right: 3px solid #000000; display: flex; flex-direction: column; background: #fff0f5; }
+      .y2k-pane-header {
+        font-size: 12px; font-weight: 900; padding: 6px; background: #00ffff; color: #000000;
+        border-bottom: 3px solid #000000; text-align: center; text-transform: uppercase;
+      }
+      .y2k-pane-content-list { flex: 1; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+      
+      .y2k-playlist-row {
+        font-size: 11px; font-weight: 900; padding: 6px 8px; border-radius: 8px;
+        display: flex; align-items: center; justify-content: space-between;
+        background: #ffffff; border: 2px solid #000000; color: #000000; cursor: pointer;
+      }
+      .y2k-playlist-row.is-active-playlist { background: #ffcc00; }
+      .playlist-text-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+      .delete-playlist-x { color: #ff0055; font-size: 12px; }
+
+      .playlist-management-deck { padding: 4px 6px; border-top: 2px solid #000000; background: #e6e6fa; display: flex; gap: 4px; }
+      .playlist-management-deck input { flex: 1; font-size: 10px; font-weight: bold; padding: 4px; border: 2px solid #000000; border-radius: 4px; }
+      .playlist-management-deck button { background: #bfff00; border: 2px solid #000000; border-radius: 4px; font-size: 10px; font-weight: 900; cursor: pointer; }
+
+      .y2k-right-pane { width: 62%; display: flex; flex-direction: column; overflow: hidden; background: #ffffff; }
+      .y2k-table-header { background: #bfff00; color: #000000; border-bottom: 3px solid #000000; font-size: 12px; font-weight: 900; padding: 6px; text-transform: uppercase; }
+      .y2k-table-scroll { flex: 1; overflow-y: auto; }
+      .y2k-tracks-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+      
+      .track-row-item { border-bottom: 2px solid #000000; font-size: 11px; font-weight: 900; color: #000000; cursor: pointer; }
+      .track-row-item:nth-child(even) { background-color: #fff9fb; }
+      .track-row-item.is-active-row { background: #ff007f !important; color: #ffffff !important; }
+      .track-row-item td { padding: 8px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      
+      .y2k-row-delete-btn { background: #ff0055; border: 2px solid #000000; border-radius: 6px; color: white; padding: 4px 6px; cursor: pointer; }
+
+      .y2k-footer-bar { display: flex; flex-direction: column; gap: 4px; }
+      .y2k-inputs { display: flex; gap: 4px; }
+      .y2k-inputs input { flex: 1; padding: 6px 10px; border-radius: 8px; border: 3px solid #000000; font-size: 11px; font-weight: 900; }
+      .y2k-inputs button {
+        border: 3px solid #000000; background: linear-gradient(to bottom, #bfff00 0%, #80cc00 100%);
+        padding: 4px 14px; border-radius: 8px; font-size: 11px; font-weight: 900; cursor: pointer;
+      }
+      .y2k-file-trigger {
+        display: block; text-align: center; font-size: 11px; font-weight: 900; color: #000000;
+        cursor: pointer; border: 3px dashed #000000; padding: 6px; border-radius: 8px; background: #bfff00;
+      }
     </style>
 
-    <div class="mp3-cute-container">
-      <!-- Media Info -->
-      <div class="mp3-now-playing">
-        <div class="album-art-wrapper ${spinClass}">
-          <img class="album-art" src="${displayCover}" alt="cover">
+    <!-- The onerror attribute serves as a bulletproof hook that runs instantly even in sandboxed environments -->
+    <div class="y2k-player-container" id="y2k-player-instance-${index}">
+      <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display:none;" onerror="
+        (function(){
+          const myNode = document.getElementById('y2k-player-instance-${index}');
+          if (!myNode) return;
+          // 1. Force the parent outer card components to go completely transparent
+          let shell = myNode.parentElement;
+          while(shell && !shell.classList.contains('widget') && !shell.classList.contains('grid-stack-item-content') && shell.tagName !== 'BODY') {
+            shell.style.background = 'transparent';
+            shell.style.backgroundColor = 'transparent';
+            shell.style.border = 'none';
+            shell.style.boxShadow = 'none';
+            shell.style.padding = '0px';
+            shell = shell.parentElement;
+          }
+          if (shell && shell.tagName !== 'BODY') {
+            shell.style.background = 'transparent';
+            shell.style.backgroundColor = 'transparent';
+            shell.style.border = 'none';
+            shell.style.boxShadow = 'none';
+            shell.style.padding = '0px';
+            // Hide dashboard built-in text title frames if visible
+            const oldHead = shell.querySelector('.widget-header') || shell.querySelector('.widget-title');
+            if (oldHead) oldHead.style.display = 'none';
+          }
+        })();
+      ">
+
+      <!-- Corner X Button invokes multi-paradigm frame removal hooks -->
+      <button class="widget-close-corner-btn" title="Delete Player Widget" onclick="
+        event.stopPropagation();
+        killActiveAudioInstance(${index});
+        
+        // Strategy A: Fire framework native click events on original shell close buttons if hidden nearby
+        const nativeClose = this.closest('.grid-stack-item, .widget').querySelector('.delete-widget, .remove-widget, .widget-remove, .close-btn');
+        if (nativeClose) {
+          nativeClose.click();
+        } else if (typeof deleteWidget === 'function') {
+          // Strategy B: Fallback array pointer deletion routine
+          deleteWidget(${index});
+        } else {
+          // Strategy C: Absolute UI safety fallback drops it from view completely
+          this.closest('.y2k-player-container').parentElement.style.display = 'none';
+        }
+      ">
+        <i class="fas fa-times"></i>
+      </button>
+
+      <div class="y2k-top-deck">
+        <div class="y2k-media-buttons">
+          <button onclick="prevTrack(${index})" title="Back"><i class="fas fa-backward"></i></button>
+          <button class="play-trigger" onclick="togglePlayTrack(${index})" title="Play/Pause">
+            <i class="fas ${isPlaying ? 'fa-pause' : 'fa-play'}"></i>
+          </button>
+          <button onclick="nextTrack(${index})" title="Next"><i class="fas fa-forward"></i></button>
         </div>
-        <div class="track-meta">
-          <strong class="track-title">${escapeHtml(displayTitle)}</strong>
-          <span class="track-status">${isPlaying ? 'Now Playing~' : 'Paused'}</span>
+        
+        <div class="y2k-utility-buttons">
+          <button class="${isShuffle ? 'shuffle-on' : ''}" onclick="toggleShuffle(${index})" title="Mix Random">
+            <i class="fas fa-random"></i> SHUFFLE
+          </button>
         </div>
       </div>
 
-      <!-- Control Deck -->
-      <div class="mp3-controls">
-        <button class="shuffle-btn ${shuffleClass}" title="Shuffle Mode" onclick="toggleShuffle(${index})">
-          <i class="fas fa-random"></i>
-        </button>
-        <button onclick="prevTrack(${index})"><i class="fas fa-backward"></i></button>
-        <button class="operator" onclick="togglePlayTrack(${index})"><i class="fas ${controlIcon}"></i></button>
-        <button onclick="nextTrack(${index})"><i class="fas fa-forward"></i></button>
+      <div class="y2k-split-body">
+        <div class="y2k-left-pane">
+          <div class="y2k-pane-header">Playlists</div>
+          <div class="y2k-pane-content-list">
+            ${playlistItemsHtml}
+          </div>
+          <div class="playlist-management-deck">
+            <input type="text" id="new-playlist-input-${index}" placeholder="New name...">
+            <button onclick="createNewPlaylist(${index})">Create</button>
+          </div>
+        </div>
+        
+        <div class="y2k-right-pane">
+          <div class="y2k-table-header">💿 Track Listing</div>
+          <div class="y2k-table-scroll">
+            <table class="y2k-tracks-table">
+              <tbody>
+                ${tracksRowsHtml}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
-      <!-- Dynamic Queue -->
-      <div class="mp3-playlist-queue">
-        ${playlistItemsMarkup}
-      </div>
-
-      <!-- Action Row -->
-      <div class="mp3-upload-row">
-        <label style="display:block; text-align:center; cursor:pointer; background:#fff; padding: 8px; border-radius:10px; font-size:12px; font-weight:600; box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px dashed #ffd1dc;">
-          <i class="fas fa-plus-circle"></i> Add Cute Music Tracks
-          <input type="file" accept="audio/mp3, audio/mpeg" multiple style="display:none;" onchange="handleMp3Upload(this.files, ${index})">
+      <div class="y2k-footer-bar">
+        <div class="y2k-inputs">
+          <input type="text" id="mp3-url-${index}" placeholder="Paste stream web audio link here...">
+          <button onclick="addAudioUrlTrack(${index})">Load URL</button>
+        </div>
+        <label class="y2k-file-trigger">
+          ⚡ BROWSE OR FILE DROP LOCAL AUDIO ⚡
+          <input type="file" accept="audio/mp3, audio/mpeg" multiple style="display:none;" onchange="handleLocalFileUpload(this.files, ${index})">
         </label>
       </div>
     </div>
