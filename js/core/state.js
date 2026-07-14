@@ -109,6 +109,17 @@ function createDefaultWidget(type) {
     style: createDefaultStyle()
   };
 
+  function persistWidgetDataHelper() {
+    // Option A: If your framework has a native global save function, call it here:
+    if (typeof saveWidgets === 'function') {
+      saveWidgets();
+    }
+    // Option B: If it's a completely custom build, force save the state to localStorage:
+    else if (typeof widgets !== 'undefined') {
+      localStorage.setItem('dashboard_widgets_state', JSON.stringify(widgets));
+    }
+  }
+
   if (type === 'board') {
     base.title = 'TASK BOARD';
     base.size = { w: 520, h: 300 };

@@ -729,8 +729,11 @@ function parseHtmlCalendarBlock(textCol) {
 }
 
 function renderMp3PlayerMarkup(widget, index) {
+  // Clear out any old experimental state logic and read straight from the template data
   if (!widget.playlists) {
-    widget.playlists = { "✿ cute-mix-1 ✿": widget.tracks || [] };
+    widget.playlists = {
+      "✿ cute-mix-1 ✿": widget.tracks || []
+    };
   }
   if (!widget.activePlaylistName) {
     widget.activePlaylistName = Object.keys(widget.playlists)[0];

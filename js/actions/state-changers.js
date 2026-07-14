@@ -1,3 +1,4 @@
+window._mp3SavedState = window._mp3SavedState || {};
 /* --- STATE CHANGERS --- */
 
 function addProject() {

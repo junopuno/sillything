@@ -391,72 +391,80 @@ function deletePlaylist(widgetIndex, playlistName, event) {
   if (typeof saveData === 'function') saveData();
   if (typeof render === 'function') render();
 }
+// 1. ADD TRACK FROM LOCAL FILES
+function handleLocalFileUpload(files, index) {
+  if (!files || files.length === 0) return;
 
-// TRACK LOADER PATCH FOR WEB URL LINKS
-function addAudioUrlTrack(widgetIndex) {
-  const inputEl = document.getElementById(`mp3-url-${widgetIndex}`);
-  if (!inputEl || !inputEl.value.trim()) return;
+  // Directly grab the widget from your active dashboard data array
+  const widget = data[activeIdx].widgets[index];
+  if (!widget) return;
 
-  let url = inputEl.value.trim();
-  const widget = data[activeIdx].widgets[widgetIndex];
-
-  // Safe init checks
+  // Initialize properties safely in place
   if (!widget.playlists) widget.playlists = {};
   if (!widget.activePlaylistName) widget.activePlaylistName = "✿ cute-mix-1 ✿";
-  if (!widget.playlists[widget.activePlaylistName]) widget.playlists[widget.activePlaylistName] = [];
+  if (!widget.playlists[widget.activePlaylistName]) {
+    widget.playlists[widget.activePlaylistName] = [];
+  }
 
-  const currentPlaylistTracks = widget.playlists[widget.activePlaylistName];
+  // Push files directly into the array
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    widget.playlists[widget.activePlaylistName].push({
+      name: file.name.replace(/\.[^/.]+$/, ""),
+      srcUrl: URL.createObjectURL(file)
+    });
+  }
 
+  // Save to your dashboard's storage and force-render the view
+  if (typeof saveData === 'function') saveData();
+  if (typeof render === 'function') render();
+}
+
+// 2. ADD TRACK FROM WEB AUDIO STREAM URL
+function addAudioUrlTrack(index) {
+  const urlInput = document.getElementById(`mp3-url-${index}`);
+  if (!urlInput || !urlInput.value.trim()) return;
+
+  const widget = data[activeIdx].widgets[index];
+  if (!widget) return;
+
+  if (!widget.playlists) widget.playlists = {};
+  if (!widget.activePlaylistName) widget.activePlaylistName = "✿ cute-mix-1 ✿";
+  if (!widget.playlists[widget.activePlaylistName]) {
+    widget.playlists[widget.activePlaylistName] = [];
+  }
+
+  let url = urlInput.value.trim();
+  // Fix GitHub raw links if pasted
   if (url.includes('github.com') && url.includes('/blob/')) {
     url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
   }
 
-  let songName = "Web Track " + (currentPlaylistTracks.length + 1);
+  let songName = "Web Track " + (widget.playlists[widget.activePlaylistName].length + 1);
   try {
     const cleanUrl = url.split('?')[0];
     const filename = cleanUrl.substring(cleanUrl.lastIndexOf('/') + 1);
     if (filename) songName = decodeURIComponent(filename).replace(/\.[^/.]+$/, "");
   } catch (e) { }
 
-  currentPlaylistTracks.push({ name: songName, srcUrl: url });
-  inputEl.value = '';
+  widget.playlists[widget.activePlaylistName].push({ name: songName, srcUrl: url });
+  urlInput.value = '';
 
   if (typeof saveData === 'function') saveData();
   if (typeof render === 'function') render();
 }
 
-// TRACK LOADER PATCH FOR LOCAL ATTACHMENTS
-function handleLocalFileUpload(files, widgetIndex) {
-  if (!files || files.length === 0) return;
-  const widget = data[activeIdx].widgets[widgetIndex];
-
-  if (!widget.playlists) widget.playlists = {};
-  if (!widget.activePlaylistName) widget.activePlaylistName = "✿ cute-mix-1 ✿";
-  if (!widget.playlists[widget.activePlaylistName]) widget.playlists[widget.activePlaylistName] = [];
-
-  const currentPlaylistTracks = widget.playlists[widget.activePlaylistName];
-
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    currentPlaylistTracks.push({
-      name: file.name.replace(/\.[^/.]+$/, ""),
-      srcUrl: URL.createObjectURL(file)
-    });
-  }
-
-  if (typeof saveData === 'function') saveData();
-  if (typeof render === 'function') render();
-}
-
-// INDIVIDUAL TRACK DELETION METHOD UPDATED FOR MULTI-PLAYLIST
+// 3. DELETE INDIVIDUAL TRACK
 function deleteTrack(widgetIndex, trackIndex, event) {
   if (event) event.stopPropagation();
+
   const widget = data[activeIdx].widgets[widgetIndex];
-  if (!widget.playlists || !widget.activePlaylistName) return;
+  if (!widget || !widget.playlists || !widget.activePlaylistName) return;
 
   const currentPlaylistTracks = widget.playlists[widget.activePlaylistName] || [];
-  const registry = window._mp3Registry[widgetIndex];
+  const registry = window._mp3Registry && window._mp3Registry[widgetIndex];
 
+  // If deleting the currently playing song, pause it first
   if (widget.currentTrackIndex === trackIndex && registry && registry.isPlaying) {
     registry.audio.pause();
     registry.isPlaying = false;
@@ -464,6 +472,7 @@ function deleteTrack(widgetIndex, trackIndex, event) {
 
   currentPlaylistTracks.splice(trackIndex, 1);
 
+  // Adjust current index bounds
   if (widget.currentTrackIndex >= currentPlaylistTracks.length) {
     widget.currentTrackIndex = Math.max(0, currentPlaylistTracks.length - 1);
   }
