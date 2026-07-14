@@ -11,4 +11,5 @@ assert.deepStrictEqual(getTimerNotificationConfig({ notificationSound: 'bell', n
 });
 assert.strictEqual(getSpotifyEmbedUrl('https://open.spotify.com/playlist/abc123'), 'https://open.spotify.com/embed/playlist/abc123');
 assert.strictEqual(getSpotifyEmbedUrl('https://open.spotify.com/track/xyz789'), 'https://open.spotify.com/embed/track/xyz789');
+assert.strictEqual(getSpotifyEmbedUrl('https://example.com/not-a-spotify-link'), '');
 console.log('All widget feature tests passed.');

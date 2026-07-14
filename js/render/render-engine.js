@@ -106,7 +106,29 @@ function extractYoutubeVideoIdFromWidget(widget) {
   return parseYoutubeVideoId(widget?.youtubeUrl || widget?.embedUrl || '');
 }
 
-function hydratePreservedYoutubeWidget(existingWidget, desiredWidget, widgetData) {
+function getWidgetEmbedTarget(widgetData) {
+  if (!widgetData || typeof widgetData !== 'object') return null;
+
+  if (widgetData.type === 'youtube') {
+    const videoId = extractYoutubeVideoIdFromWidget(widgetData);
+    if (!videoId) return null;
+    return {
+      type: 'youtube',
+      src: `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1`,
+      videoId
+    };
+  }
+
+  if (widgetData.type === 'spotify') {
+    const embedUrl = typeof getSpotifyEmbedUrl === 'function' ? getSpotifyEmbedUrl(widgetData.spotifyUrl || '') : '';
+    if (!embedUrl) return null;
+    return { type: 'spotify', src: embedUrl };
+  }
+
+  return null;
+}
+
+function hydratePreservedEmbeddedWidget(existingWidget, desiredWidget, widgetData) {
   existingWidget.setAttribute('class', desiredWidget.getAttribute('class') || 'widget');
   existingWidget.setAttribute('style', desiredWidget.getAttribute('style') || '');
   existingWidget.dataset.x = desiredWidget.dataset.x;
@@ -128,40 +150,68 @@ function hydratePreservedYoutubeWidget(existingWidget, desiredWidget, widgetData
   if (desiredBody && existingBody) {
     existingBody.setAttribute('style', desiredBody.getAttribute('style') || '');
     const input = existingBody.querySelector('input[type="url"]');
-    if (input) input.value = widgetData.youtubeUrl || widgetData.embedUrl || '';
+    if (input) {
+      if (widgetData?.type === 'spotify') input.value = widgetData.spotifyUrl || '';
+      else input.value = widgetData.youtubeUrl || widgetData.embedUrl || '';
+    }
+
+    const desiredFrame = desiredBody.querySelector('.youtube-frame, .spotify-frame');
+    const existingFrame = existingBody.querySelector('.youtube-frame, .spotify-frame');
+    if (existingFrame && desiredFrame) {
+      const desiredFrameSrc = desiredFrame.getAttribute('src') || '';
+      const desiredVideoId = desiredFrame.dataset.videoId || '';
+      if (desiredFrameSrc && existingFrame.getAttribute('src') !== desiredFrameSrc) {
+        existingFrame.setAttribute('src', desiredFrameSrc);
+      }
+      if (desiredVideoId && existingFrame.dataset.videoId !== desiredVideoId) {
+        existingFrame.dataset.videoId = desiredVideoId;
+      }
+    }
+
+    const desiredFallbackLink = desiredBody.querySelector('.youtube-fallback-link');
     const fallbackLink = existingBody.querySelector('.youtube-fallback-link');
-    const videoId = extractYoutubeVideoIdFromWidget(widgetData);
-    if (fallbackLink && videoId) fallbackLink.href = `https://www.youtube.com/watch?v=${videoId}`;
+    if (fallbackLink && desiredFallbackLink) {
+      fallbackLink.href = desiredFallbackLink.getAttribute('href') || '';
+    }
   }
 
   return existingWidget;
 }
 
-function setCanvasHtmlPreservingYoutube(canvas, html, category) {
+function setCanvasHtmlPreservingEmbeddedWidgets(canvas, html, category) {
   const template = document.createElement('template');
   template.innerHTML = html;
   const desiredChildren = Array.from(template.content.childNodes);
-  const preservedYoutubeWidgets = new Map();
+  const preservedWidgets = new Map();
 
   desiredChildren.forEach(node => {
     if (!(node instanceof HTMLElement) || !node.matches('.widget[data-index]')) return;
 
     const index = Number(node.dataset.index);
     const widgetData = category.widgets[index];
-    if (widgetData?.type !== 'youtube') return;
-
     const existingWidget = canvas.querySelector(`.widget[data-index="${index}"]`);
-    const existingFrame = existingWidget?.querySelector('.youtube-frame');
-    const desiredVideoId = extractYoutubeVideoIdFromWidget(widgetData);
-    if (!existingWidget || !existingFrame || !desiredVideoId || existingFrame.dataset.videoId !== desiredVideoId) return;
+    if (!widgetData || !existingWidget) return;
 
-    hydratePreservedYoutubeWidget(existingWidget, node, widgetData);
-    preservedYoutubeWidgets.set(String(index), existingWidget);
+    const desiredEmbed = getWidgetEmbedTarget(widgetData);
+    const existingFrame = existingWidget.querySelector('.youtube-frame, .spotify-frame');
+    const desiredFrame = node.querySelector('.youtube-frame, .spotify-frame');
+    const shouldPreserve = Boolean(
+      existingFrame &&
+      desiredFrame &&
+      desiredEmbed &&
+      desiredFrame.getAttribute('src') &&
+      existingFrame.getAttribute('src') === desiredFrame.getAttribute('src')
+    );
+
+    if (!shouldPreserve) return;
+
+    hydratePreservedEmbeddedWidget(existingWidget, node, widgetData);
+    preservedWidgets.set(String(index), existingWidget);
   });
 
   Array.from(canvas.childNodes).forEach(node => {
     if (node instanceof HTMLElement && node.matches('.widget[data-index]')) {
-      const preservedWidget = preservedYoutubeWidgets.get(node.dataset.index);
+      const preservedWidget = preservedWidgets.get(node.dataset.index);
       if (preservedWidget === node) return;
     }
     node.remove();
@@ -170,7 +220,7 @@ function setCanvasHtmlPreservingYoutube(canvas, html, category) {
   let cursor = canvas.firstChild;
   desiredChildren.forEach(node => {
     if (node instanceof HTMLElement && node.matches('.widget[data-index]')) {
-      const preservedWidget = preservedYoutubeWidgets.get(node.dataset.index);
+      const preservedWidget = preservedWidgets.get(node.dataset.index);
       if (preservedWidget) {
         cursor = preservedWidget.nextSibling;
         return;
@@ -457,7 +507,7 @@ function render() {
             <div class="widget-body" style="${getWidgetBodyStyleString(w.style)}">${renderWidgetBody(w, i)}</div>
         </div>`;
     }).join('');
-    setCanvasHtmlPreservingYoutube(canvas, categoryHtml, category);
+    setCanvasHtmlPreservingEmbeddedWidgets(canvas, categoryHtml, category);
   }
 
   initPhysics();
