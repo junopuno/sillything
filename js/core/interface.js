@@ -504,3 +504,153 @@ function transferTrack(widgetIndex, trackIndex, targetPlaylistName) {
   }
   persistMp3Widget();
 }
+
+// 1. Sökfunktion
+function searchTracks (index, query) {
+  const widget = getWidget(index)
+  if (!widget) return
+
+  widget.searchQuery = query
+  saveAndRender()
+}
+
+// 2. Exportera aktiv spellista till JSON-fil
+function exportPlaylistJson (index) {
+  const widget = getWidget(index)
+  if (!widget) return
+
+  const activeName = widget.activePlaylistName
+  const playlistData = {
+    playlistName: activeName,
+    coverImg: widget.playlistCovers ? widget.playlistCovers[activeName] : '',
+    tracks: widget.playlists[activeName] || []
+  }
+
+  const dataStr =
+    'data:text/json;charset=utf-8,' +
+    encodeURIComponent(JSON.stringify(playlistData, null, 2))
+  const downloadAnchor = document.createElement('a')
+  downloadAnchor.setAttribute('href', dataStr)
+  downloadAnchor.setAttribute(
+    'download',
+    `${activeName.replace(/\s+/g, '_')}_playlist.json`
+  )
+  document.body.appendChild(downloadAnchor)
+  downloadAnchor.click()
+  downloadAnchor.remove()
+}
+
+// 3. Importera spellista från sparad JSON-fil
+function importPlaylistJson (index, file) {
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = function (e) {
+    try {
+      const data = JSON.parse(e.target.result)
+      const widget = getWidget(index)
+      if (!widget) return
+
+      if (!data.playlistName || !Array.isArray(data.tracks)) {
+        alert('Ogiltigt JSON-format för spellista.')
+        return
+      }
+
+      // Spara importerade låtar och omslag i widget-objektet
+      widget.playlists[data.playlistName] = data.tracks
+      if (!widget.playlistCovers) widget.playlistCovers = {}
+      if (data.coverImg)
+        widget.playlistCovers[data.playlistName] = data.coverImg
+
+      widget.activePlaylistName = data.playlistName
+
+      normalizeMp3Widget(widget)
+      saveAndRender()
+    } catch (err) {
+      alert('Kunde inte läsa JSON-filen: ' + err.message)
+    }
+  }
+
+  reader.readAsText(file)
+}
+// 1. Tangentbordsgenvägar (Space = Spela/Pausa, Pil Höger/Vänster = Byt låt)
+document.addEventListener('keydown', e => {
+  if (['input', 'textarea'].includes(e.target.tagName.toLowerCase())) return
+
+  if (e.code === 'Space') {
+    e.preventDefault()
+    togglePlayTrack(activeWidgetIndex)
+  } else if (e.code === 'ArrowRight') {
+    playNextTrack(activeWidgetIndex)
+  } else if (e.code === 'ArrowLeft') {
+    playPrevTrack(activeWidgetIndex)
+  }
+})
+
+// 2. Volymkontroll
+function setWidgetVolume (index, volumeValue) {
+  const registry = window._mp3Registry && window._mp3Registry[index]
+  if (registry && registry.audio) {
+    registry.audio.volume = parseFloat(volumeValue)
+  }
+}
+
+// 3. Spola i låten (Seek)
+function seekWidgetTrack (index, percent) {
+  const registry = window._mp3Registry && window._mp3Registry[index]
+  if (registry && registry.audio && registry.audio.duration) {
+    registry.audio.currentTime = (percent / 100) * registry.audio.duration
+  }
+}
+
+// 4. Media Session API (Visa låt/omslag på låsskärm & hårdvaruknappar)
+function updateMediaSession (track) {
+  if ('mediaSession' in navigator && track) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: track.name || 'Unknown Track',
+      artist: 'MP3 Player',
+      artwork: track.coverImg ? [{ src: track.coverImg }] : []
+    })
+
+    navigator.mediaSession.setActionHandler('play', () =>
+      togglePlayTrack(activeWidgetIndex)
+    )
+    navigator.mediaSession.setActionHandler('pause', () =>
+      togglePlayTrack(activeWidgetIndex)
+    )
+    navigator.mediaSession.setActionHandler('nexttrack', () =>
+      playNextTrack(activeWidgetIndex)
+    )
+    navigator.mediaSession.setActionHandler('previoustrack', () =>
+      playPrevTrack(activeWidgetIndex)
+    )
+  }
+}
+
+// 5. Favoritmarkera Låt (Hjärta)
+function toggleFavoriteTrack (index, tIdx) {
+  const widget = getWidget(index)
+  if (!widget) return
+
+  const activeName = widget.activePlaylistName
+  const track = (widget.playlists[activeName] || [])[tIdx]
+  if (!track) return
+
+  if (!widget.playlists['Favoriter']) {
+    widget.playlists['Favoriter'] = []
+  }
+
+  const favList = widget.playlists['Favoriter']
+  const existingIdx = favList.findIndex(
+    t => t.url === track.url && t.name === track.name
+  )
+
+  if (existingIdx >= 0) {
+    favList.splice(existingIdx, 1)
+  } else {
+    favList.push({ ...track })
+  }
+
+  saveAndRender()
+}
+

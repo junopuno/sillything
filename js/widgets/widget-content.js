@@ -752,6 +752,10 @@ function renderMp3PlayerMarkup(widget, index) {
   const displayCover = currentTrack ? currentTrack.coverImg : '';
   const playlistNames = Object.keys(widget.playlists);
   const playlistCover = widget.playlistCovers && widget.playlistCovers[activePlaylistName];
+  const isFav = (widget.playlists['Favoriter'] || []).some(
+  f => f.name === track.name
+)
+
 
   const playlistItemsHtml = playlistNames.map(pName => {
     const isSelected = pName === activePlaylistName ? 'is-active-playlist' : '';
@@ -776,10 +780,16 @@ function renderMp3PlayerMarkup(widget, index) {
     `;
   }).join('');
 
-  const trackItemsHtml =
-  tracks.length > 0
-    ? tracks
-        .map((track, tIdx) => {
+  // 1. Sökfras och filtrering
+  const searchQuery = (widget.searchQuery || '').toLowerCase()
+
+  // Filtrera låtar om användaren söker
+  const filteredTracks = tracks.filter(track => {
+    return track.name.toLowerCase().includes(searchQuery)
+  })
+
+
+  const trackItemsHtml = filteredTracks.length > 0 ? filteredTracks.map((track, tIdx) => {
           const activeClass = tIdx === currentIndex ? 'is-active-row' : ''
           const transferOptions = playlistNames
             .filter(name => name !== activePlaylistName)
@@ -808,6 +818,7 @@ function renderMp3PlayerMarkup(widget, index) {
           track.coverImg || ''
         )}" alt="">
         <span class="mp3-track-title">${escapeHtml(track.name)}</span>
+       
         ${transferMenu}
         <details class="mp3-menu" onclick="event.stopPropagation();">
           <summary title="Track actions"><i class="fas fa-ellipsis-h"></i></summary>
@@ -823,6 +834,8 @@ function renderMp3PlayerMarkup(widget, index) {
       `;
     }).join('') : '';
 
+    
+
   return `
     <div class="y2k-player-container" id="y2k-player-instance-${index}">
       <div class="mp3-now-deck">
@@ -832,6 +845,26 @@ function renderMp3PlayerMarkup(widget, index) {
           <strong>${escapeHtml(displayTitle)}</strong>
           <small>${escapeHtml(activePlaylistName)}</small>
         </div>
+      </div>
+
+      
+
+            <!-- Sökfält och JSON-knappar -->
+      <div class="mp3-toolbar" style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+        <input 
+          type="text" 
+          placeholder="Sök låt..." 
+          value="${escapeHtml(widget.searchQuery || '')}" 
+          oninput="searchTracks(${index}, this.value)"
+          style="flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;"
+        >
+        <button type="button" onclick="exportPlaylistJson(${index})" title="Exportera spellista till JSON">
+          <i class="fas fa-download"></i> Exportera JSON
+        </button>
+        <label class="mp3-upload-btn" style="cursor: pointer;">
+          <i class="fas fa-upload"></i> Importera JSON
+          <input type="file" accept=".json" onchange="importPlaylistJson(${index}, this.files[0])" style="display:none;">
+        </label>
       </div>
 
       <div class="mp3-transport-row">
@@ -844,9 +877,19 @@ function renderMp3PlayerMarkup(widget, index) {
         <button class="jelly-btn ${repeatMode !== 'off' ? 'is-on' : ''}" type="button" onclick="toggleRepeat(${index})" title="Repeat ${escapeHtml(repeatMode)}"><i class="fas fa-repeat"></i><span>${repeatMode === 'one' ? '1' : ''}</span></button>
       </div>
 
-      <div class="mp3-progress-row">
-        <input id="mp3-progress-${index}" type="range" min="0" max="100" step="0.1" value="${progress}" oninput="seekMp3Track(${index}, this.value)">
-        <span id="mp3-time-${index}">${typeof formatMp3Time === 'function' ? `${formatMp3Time(currentTime)} / ${formatMp3Time(duration)}` : '0:00 / 0:00'}</span>
+      <!-- Volume & Progress Bar -->
+      <div class="mp3-advanced-controls" style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+        <!-- Progress bar -->
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem;">
+          <input type="range" min="0" max="100" value="${duration ? (currentTime/duration)*100 : 0}" onchange="seekWidgetTrack(${index}, this.value)" style="flex: 1;">
+        </div>
+      
+        <!-- Volume control -->
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem;">
+          <i class="fas fa-volume-down"></i>
+          <input type="range" min="0" max="1" step="0.01" value="1" oninput="setWidgetVolume(${index}, this.value)" style="flex: 1;">
+          <i class="fas fa-volume-up"></i>
+        </div>
       </div>
 
       <div class="mp3-compact-grid">
@@ -878,7 +921,10 @@ function renderMp3PlayerMarkup(widget, index) {
           </div>
           <div class="mp3-scroll-list tracks-list">${trackItemsHtml}</div>
         </section>
+        
       </div>
     </div>
   `;
+
+  
 }

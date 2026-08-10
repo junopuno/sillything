@@ -128,12 +128,12 @@ input[type="range"] {
   grid-column: 1 / -1;
   display: grid;
   gap: 6px;
-  font-size: 0.72rem;
+  font-size: 1rem;
   color: #475569;
 }
 
 .sound-upload-field input[type="file"] {
-  font-size: 0.7rem;
+  font-size: 1rem;
 }
 
 .sound-upload-field button {
@@ -348,19 +348,19 @@ input[type="range"] {
 
 .mp3-kicker {
   color: #c0008c;
-  font-size: 0.62rem;
+  font-size: 1rem;
   font-weight: 900;
   text-transform: uppercase;
 }
 
 .mp3-title-stack strong {
-  font-size: 0.92rem;
+  font-size: 1.1rem;
   line-height: 1.1;
 }
 
 .mp3-title-stack small {
   color: #5b2b6c;
-  font-size: 0.68rem;
+  font-size:1rem;
 }
 
 .mp3-transport-row {
@@ -388,7 +388,7 @@ input[type="range"] {
   height: 34px;
   border-radius: 999px;
   background: linear-gradient(180deg, #ffffff 0%, var(--mp3-blue) 42%, #56d9ff 100%);
-  font-size: 0.82rem;
+  font-size: 1.2rem;
 }
 
 .jelly-btn.play-trigger {
@@ -427,7 +427,7 @@ input[type="range"] {
 
 .mp3-progress-row span {
   width: 68px;
-  font-size: 0.64rem;
+  font-size: 1rem;
   font-weight: 900;
   text-align: right;
   white-space: nowrap;
@@ -462,7 +462,7 @@ input[type="range"] {
   padding: 5px 6px;
   border-bottom: 2px solid var(--mp3-ink);
   background: linear-gradient(90deg, var(--mp3-yellow), #ffa7df);
-  font-size: 0.7rem;
+  font-size: 1rem;
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -519,13 +519,13 @@ input[type="range"] {
 
 .playlist-text-title,
 .mp3-track-title {
-  font-size: 0.7rem;
+  font-size: 1rem;
   font-weight: 900;
 }
 
 .playlist-text-title small {
   color: #8a2874;
-  font-size: 0.62rem;
+  font-size: 1rem;
 }
 
 .mp3-menu {
@@ -643,3 +643,232 @@ input[type="range"] {
     height: 48px;
   }
 }
+/* ==========================================
+   3D JELLY & CANDY STYLING FOR MP3 PLAYER
+   ========================================== */
+
+/* Sökfält & Verktygsrad */
+.mp3-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: nowrap;
+
+}
+/* ==========================================
+   INWARD / DEEP JELLY 3D STYLING
+   ========================================== */
+
+/* Sökfält - Trycks inåt när man klickar/skriver */
+.mp3-toolbar input[type="text"] {
+  flex: 1;
+  padding: 8px 14px;
+  border-radius: 18px;
+  border: 3px solid #fcfafb;
+  background: linear-gradient(180deg, #ebd2f8 0%, #b366fe 90%);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  outline: none;
+  box-shadow: 0 5px 0 #923ffd, 0 8px 12px rgba(146, 63, 253, 0.3);
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mp3-toolbar input[type="text"]::placeholder {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.mp3-toolbar input[type="text"]:focus {
+  /* Går inåt och får ett djupt lila hål/sänka */
+  background: linear-gradient(180deg, #8822fd 0%, #ca96ff 100%);
+  color: #ffffff;
+  border: 3px solid #7313e0;
+  transform: translateY(3px); /* Åker ner lite */
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 2px 4px #4a0299, 0 1px 0 #ffffff;
+}
+
+/* Knappar - Trycks inåt när man klickar på dem (:active) */
+.mp3-toolbar button,
+.mp3-toolbar .mp3-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 18px;
+  border: 3px solid #fcfafb;
+  background: linear-gradient(180deg, #facbd8 0%, #fe6691 90%);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 5px 0 rgb(255, 122, 160), 0 8px 12px rgba(244, 3, 111, 0.3);
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  flex-shrink: 0;
+}
+
+.mp3-toolbar button:hover,
+.mp3-toolbar .mp3-upload-btn:hover {
+  background: linear-gradient(180deg, #fce5eb 0%, #ff96b4 90%);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #fd5e8b, 0 10px 15px rgba(244, 3, 111, 0.3);
+  color: #fd3f75;
+  border: 3px solid #fd3f75;
+}
+
+/* När du trycker på knappen sänks den ner och blir djup */
+.mp3-toolbar button:active,
+.mp3-toolbar .mp3-upload-btn:active {
+  background: linear-gradient(180deg, #d83060 0%, #ff7da1 100%);
+  color: #ffffff;
+  border: 3px solid #b81d48;
+  transform: translateY(4px); /* Trycks ner */
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.35), inset 0 2px 4px #800020, 0 1px 0 #ffffff;
+}
+/* Candy 3D Jelly Knappar (Exportera / Importera) */
+.mp3-toolbar button,
+.mp3-toolbar .mp3-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 18px;
+  border: 3px solid #fcfafb;
+  background: linear-gradient(180deg, #facbd8 0%, #fe6691 90%);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 5px 0 rgb(255, 122, 160), 0 8px 12px rgba(244, 3, 111, 0.3);
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  flex-shrink: 0;
+}
+
+.mp3-toolbar button:hover,
+.mp3-toolbar .mp3-upload-btn:hover {
+  background: linear-gradient(180deg,  #fce5eb 0%, #ff96b4 90%);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #fd5e8b, 0 10px 15px rgba(244, 3, 111, 0.3);
+  color: #fd3f75;
+  border: 3px solid #fd3f75;
+}
+
+.mp3-toolbar button:active,
+.mp3-toolbar .mp3-upload-btn:active {
+  transform: translateY(4px) scale(0.96);
+  box-shadow: 0 1px 0 #fa81a9, 0 3px 6px rgba(3, 169, 244, 0.2);
+}
+
+/* Studsigt 3D Jelly Hjärta */
+.mp3-fav-btn {
+  background: #fff0f5;
+  border: 2px solid #ffb6c1;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  color: #ffb6c1;
+  flex-shrink: 0;
+  box-shadow: 0 4px 0 #ff99aa, 0 4px 8px rgba(255, 105, 180, 0.2);
+  transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.mp3-fav-btn:hover {
+  transform: translateY(-2px) scale(1.1);
+  color: #ff69b4;
+  box-shadow: 0 6px 0 #ff99aa, 0 6px 12px rgba(255, 105, 180, 0.3);
+}
+
+.mp3-fav-btn:active {
+  transform: translateY(3px) scale(0.9);
+  box-shadow: 0 1px 0 #ff99aa, 0 2px 4px rgba(255, 105, 180, 0.2);
+}
+
+/* Aktivt Hjärta (När den är favoritmarkerad) */
+.mp3-fav-btn.active {
+  background: linear-gradient(180deg, #ff80ab 0%, #ff4081 100%);
+  border-color: #ff1744;
+  color: #ffffff !important;
+  box-shadow: 0 4px 0 #c51162, 0 5px 10px rgba(255, 64, 129, 0.4);
+}
+
+.mp3-fav-btn.active i {
+  color: #ffffff !important;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+}
+
+/* Anpassade 3D Volym & Tidsreglage (Sliders) */
+.mp3-advanced-controls input[type="range"] {
+  -webkit-appearance: none;
+  height: 10px;
+  border-radius: 10px;
+  background: #ffe6f0;
+  border: 2px solid #ffb3d9;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.mp3-advanced-controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #ff99dd 0%, #ff3399 100%);
+  border: 2px solid #ffffff;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #cc0066, 0 4px 6px rgba(0,0,0,0.15);
+  transition: transform 0.1s ease;
+}
+
+.mp3-advanced-controls input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Animerad Canvas Visualizer */
+.mp3-visualizer {
+  width: 100%;
+  height: 40px;
+  background: #111;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+/* Favoritknapp (Hjärta) */
+.mp3-fav-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  color: #888;
+  transition: transform 0.15s ease, color 0.2s ease;
+}
+
+/* Hover-effekt */
+.mp3-fav-btn:hover {
+  transform: scale(1.2);
+  color: #e74c3c;
+}
+
+/* Klick-effekt */
+.mp3-fav-btn:active {
+  transform: scale(0.9);
+}
+
+/* När hjärtat är aktivt/fyllt */
+.mp3-fav-btn .fas.fa-heart {
+  color: #e74c3c;
+}
+
