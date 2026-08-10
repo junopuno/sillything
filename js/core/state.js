@@ -152,7 +152,12 @@ function createDefaultWidget(type) {
     base.title = 'MP3 PLAYER';
     base.size = { w: 340, h: 320 }; // Sets a perfect initial grid footprint
     base.tracks = [];               // Track registry container array
+    base.playlists = { 'cute-mix-1': [] };
+    base.playlistCovers = {};
+    base.activePlaylistName = 'cute-mix-1';
     base.currentTrackIndex = 0;
+    base.repeatMode = 'off';
+    base.shuffleActive = false;
   }
 
   if (type === 'habits') base.title = 'HABITS';

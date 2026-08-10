@@ -149,7 +149,9 @@ function runGlobalTickingSystems() {
 
   if (changedTimeState) storage.set('_horizon_v7', data);
 }
-setInterval(runGlobalTickingSystems, 1000);
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  setInterval(runGlobalTickingSystems, 1000);
+}
 
 function parseSecondsToTimerFace(totalSecs) {
   const hrs = Math.floor(totalSecs / 3600).toString().padStart(2, '0');
