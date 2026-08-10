@@ -880,14 +880,5 @@ function renderMp3PlayerMarkup(widget, index) {
         </section>
       </div>
     </div>
-  ;
-}
-        </div>
-        <label class="y2k-file-trigger">
-          ⚡ BROWSE OR FILE DROP LOCAL AUDIO ⚡
-          <input type="file" accept="audio/mp3, audio/mpeg" multiple style="display:none;" onchange="handleLocalFileUpload(this.files, ${index})">
-        </label>
-      </div>
-    </div>
   `;
 }
