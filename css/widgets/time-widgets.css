@@ -901,12 +901,122 @@ input[type="range"] {
   flex-shrink: 0 !important;
   margin-left: 4px !important;
 }
-
-/* Säkerställ att checkbox och omslagsbild inte trycks ihop */
-.mp3-track-chip input[type="checkbox"],
-.mp3-track-cover {
-  flex-shrink: 0 !important;
+/* Container för menyraden */
+.mp3-multi-select-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 6px 10px !important;
+  margin-bottom: 8px !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: 2px solid var(--mp3-ink) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 4px 0 rgba(57, 16, 68, 0.3) !important;
 }
+
+/* Texten "X valda" */
+.mp3-select-count {
+  font-size: 0.85rem !important;
+  font-weight: 900 !important;
+  color: var(--mp3-ink) !important;
+  text-shadow: 0 1px 0 #fff !important;
+}
+
+.mp3-multi-select-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+/* Alla knapp-ikoner och summary-cirklar i raden */
+.mp3-multi-select-actions button,
+.mp3-multi-select-actions .mp3-menu summary {
+  min-width: 0 !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 2px solid var(--mp3-ink) !important;
+  border-radius: 999px !important;
+  color: var(--mp3-ink) !important;
+  cursor: pointer !important;
+  font-weight: 900 !important;
+  font-size: 0.85rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(180deg, #ffffff 0%, var(--mp3-blue) 42%, #56d9ff 100%) !important;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.9), 0 4px 0 rgba(57, 16, 68, 0.6) !important;
+  list-style: none !important;
+  transition: transform 0.05s ease !important;
+}
+
+/* Radera-knappen får din rosa/hot-gradient */
+.mp3-multi-select-actions button.danger {
+  background: linear-gradient(180deg, #ffffff 0%, #ff8fd6 38%, var(--mp3-hot) 100%) !important;
+  color: #fff !important;
+  text-shadow: 0 1px 0 rgba(57, 16, 68, 0.65) !important;
+}
+
+/* Tryck-effekt för alla knappar */
+.mp3-multi-select-actions button:active,
+.mp3-multi-select-actions .mp3-menu summary:active {
+  transform: translateY(3px) !important;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.9), 0 1px 0 rgba(57, 16, 68, 0.6) !important;
+}
+
+/* Popup-panelen för rullgardinsmenyn */
+.mp3-multi-select-bar .mp3-menu {
+  position: relative !important;
+}
+
+.mp3-multi-select-bar .mp3-menu-panel {
+  position: absolute !important;
+  top: 120% !important;
+  right: 0 !important;
+  z-index: 999 !important;
+  min-width: 160px !important;
+  padding: 8px !important;
+  background: #fff !important;
+  border: 2px solid var(--mp3-ink) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 6px 0 rgba(57, 16, 68, 0.6) !important;
+}
+
+/* Textrubriken inuti popuppen */
+.mp3-multi-select-bar .mp3-menu-label {
+  font-size: 0.65rem !important;
+  font-weight: 900 !important;
+  color: var(--mp3-ink) !important;
+  margin-bottom: 6px !important;
+  text-transform: uppercase !important;
+  opacity: 0.7 !important;
+}
+
+/* Knappar inuti popup-menyn */
+.mp3-multi-select-bar .mp3-menu-panel button {
+  width: 100% !important;
+  height: 30px !important;
+  padding: 0 10px !important;
+  margin-bottom: 4px !important;
+  border: 2px solid var(--mp3-ink) !important;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, #ffffff 0%, var(--mp3-blue) 42%, #56d9ff 100%) !important;
+  color: var(--mp3-ink) !important;
+  font-size: 0.75rem !important;
+  font-weight: 900 !important;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.9), 0 3px 0 rgba(57, 16, 68, 0.6) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+}
+
+.mp3-multi-select-bar .mp3-menu-panel button:active {
+  transform: translateY(2px) !important;
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.9), 0 1px 0 rgba(57, 16, 68, 0.6) !important;
+}
+
 /* --- SÖTA Y2K CHECKBOXAR --- */
 .mp3-track-chip input[type="checkbox"] {
   appearance: none !important;
@@ -946,59 +1056,8 @@ input[type="range"] {
 /* --- MARKERAD LÅTRAD (BORDER + MOCK/GLOW-EFFEKT) --- */
 /* Vi använder :has() så att kortet känner av om checkboxen inuti är ikryssad */
 .mp3-track-chip:has(input[type="checkbox"]:checked) {
-  border: 2px solid #000 !important;
-  box-shadow: 2px 2px 0px #000, 0 0 8px rgba(255, 179, 186, 0.6) !important;
+  border:4px solid #fa038c !important;
+  box-shadow: 2px 2px 0px #000, 0 0 8px rgba(255, 52, 73, 0.9) !important;
   background: linear-gradient(90deg, #ffe5ec 0%, #fff0f5 100%) !important;
   transform: translateY(-1px) !important;
-}
-
-.mp3-multi-select-bar {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  padding: 4px 8px !important;
-  margin-bottom: 6px !important;
-  background: rgba(255, 255, 255, 0.4) !important;
-  border: 1.5px solid #000 !important;
-  border-radius: 12px !important;
-}
-
-.mp3-select-count {
-  font-size: 0.75rem !important;
-  font-weight: bold !important;
-  color: #000 !important;
-}
-
-.mp3-multi-select-actions {
-  display: flex !important;
-  align-items: center !important;
-  gap: 4px !important;
-}
-
-/* Tvingar knappar och menyknappar att bli perfekta Y2K-cirklar */
-.mp3-multi-select-actions button,
-.mp3-multi-select-actions .mp3-menu summary {
-  width: 24px !important;
-  height: 24px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  font-size: 0.75rem !important;
-  border: 1.5px solid #000 !important;
-  border-radius: 50% !important;
-  background: #fff !important;
-  color: #000 !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  box-shadow: 1px 1px 0px #000 !important;
-  list-style: none !important;
-}
-
-.mp3-multi-select-actions button.danger {
-  background: #ffb3ba !important;
-}
-
-.mp3-multi-select-actions .mp3-menu {
-  position: relative !important;
 }
