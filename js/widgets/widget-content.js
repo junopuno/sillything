@@ -842,8 +842,7 @@ function renderMp3PlayerMarkup(widget, index) {
 
   return `
     <div class="y2k-player-container" id="y2k-player-instance-${index}">
-      <!-- OSYNLIG YOUTUBE CONTAINER -->
-      <div id="yt-hidden-player-${index}" style="display:none;"></div>
+    <div id="yt-hidden-player-${index}" style="position: absolute; width: 1px; height: 1px; left: -9999px; top: -9999px; opacity: 0; pointer-events: none;"></div>
       <div class="mp3-now-deck">
         <div class="mp3-cover-orb" ${displayCover ? `style="background-image:url('${escapeHtml(displayCover)}')"` : playlistCover ? `style="background-image:url('${escapeHtml(playlistCover)}')"` : ''}></div>
         <div class="mp3-title-stack">
