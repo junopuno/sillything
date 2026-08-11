@@ -417,7 +417,6 @@ function startMp3Track (widgetIndex, shouldPlay) {
       })
   }
 }
-
 function togglePlayTrack (widgetIndex) {
   const widget = normalizeMp3Widget(getMp3Widget(widgetIndex))
   const tracks = getActiveMp3Tracks(widget)
@@ -425,26 +424,38 @@ function togglePlayTrack (widgetIndex) {
 
   const registry = getOrCreateMp3Registry(widgetIndex)
 
-  if (registry.isYouTube && registry.ytPlayer) {
-    const state = registry.ytPlayer.getPlayerState()
-    if (state === YT.PlayerState.PLAYING) {
-      registry.ytPlayer.pauseVideo()
-      registry.isPlaying = false
+  if (registry.isYouTube) {
+    // Kontrollera att YT-spelaren OCH metoden getPlayerState finns och är tillgänglig
+    if (
+      registry.ytPlayer &&
+      typeof registry.ytPlayer.getPlayerState === 'function'
+    ) {
+      const state = registry.ytPlayer.getPlayerState()
+
+      if (state === YT.PlayerState.PLAYING) {
+        registry.ytPlayer.pauseVideo()
+        registry.isPlaying = false
+      } else {
+        registry.ytPlayer.playVideo()
+        registry.isPlaying = true
+      }
+      updatePlayButtonState(widgetIndex, registry.isPlaying)
     } else {
-      registry.ytPlayer.playVideo()
-      registry.isPlaying = true
+      // Om YT-objektet inte hunnit initiera getPlayerState än, starta via startMp3Track
+      startMp3Track(widgetIndex, true)
     }
-    persistMp3Widget()
   } else {
+    // Vanlig MP3-uppspelning
     if (registry.isPlaying) {
       registry.audio.pause()
       registry.isPlaying = false
-      persistMp3Widget()
+      updatePlayButtonState(widgetIndex, false)
     } else {
       startMp3Track(widgetIndex, true)
     }
   }
 }
+
 
 
 function playSpecificTrack (widgetIndex, trackIndex) {
