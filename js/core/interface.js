@@ -90,7 +90,9 @@ function goPlanering () {
   activeIdx = 'planering'
   activeSubId = null
   if (typeof render === 'function') render()
+
 }
+
 
 if (!window._mp3Registry) window._mp3Registry = {}
 
@@ -105,6 +107,22 @@ const MP3_FALLBACK_COVERS = [
 ]
 
 
+// Hjälpfunktion för att plocka ut YouTube-ID från en länk
+function getYouTubeId (url) {
+  if (!url) return null
+  const regExp =
+    /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/
+  const match = url.match(regExp)
+  return match && match[2].length === 11 ? match[2] : null
+}
+
+// Ladda YouTube IFrame API om det inte redan är laddat
+if (!window.YT) {
+  const tag = document.createElement('script')
+  tag.src = 'https://www.youtube.com/iframe_api'
+  const firstScriptTag = document.getElementsByTagName('script')[0]
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+}
 
 
 function getMp3Widget (widgetIndex) {
@@ -176,19 +194,24 @@ function getActiveMp3Tracks (widget) {
   return tracks
 }
 
-
 function getOrCreateMp3Registry (widgetIndex) {
+  window._mp3Registry = window._mp3Registry || {}
   let registry = window._mp3Registry[widgetIndex]
+
   if (!registry) {
     const audio = new Audio()
     registry = {
-      audio,
+      audio: audio,
+      ytPlayer: null,
+      ytReady: false,
+      isYouTube: false,
       isPlaying: false,
       progress: 0,
       duration: 0,
       lastSrc: ''
     }
     window._mp3Registry[widgetIndex] = registry
+
     audio.addEventListener('ended', () => handleMp3Ended(widgetIndex))
     audio.addEventListener('timeupdate', () =>
       updateMp3Progress(widgetIndex, false)
@@ -197,8 +220,47 @@ function getOrCreateMp3Registry (widgetIndex) {
       updateMp3Progress(widgetIndex, true)
     )
   }
+
+  // Kontrollera om DOM-elementet finns och om spelaren behöver initieras/återskapas
+  const targetEl = document.getElementById(`yt-hidden-player-${widgetIndex}`)
+  if (
+    targetEl &&
+    (!registry.ytPlayer || !document.contains(registry.ytPlayer.getIframe?.()))
+  ) {
+    registry.ytReady = false
+
+    const initYT = () => {
+      if (window.YT && window.YT.Player) {
+        // Töm elementet innan ny instans skapas
+        targetEl.innerHTML = ''
+        const container = document.createElement('div')
+        targetEl.appendChild(container)
+
+        registry.ytPlayer = new YT.Player(container, {
+          height: '0',
+          width: '0',
+          playerVars: { autoplay: 0, controls: 0 },
+          events: {
+            onReady: () => {
+              registry.ytReady = true
+            },
+            onStateChange: event => {
+              if (event.data === YT.PlayerState.ENDED) {
+                handleMp3Ended(widgetIndex)
+              }
+            }
+          }
+        })
+      } else {
+        setTimeout(initYT, 150)
+      }
+    }
+    initYT()
+  }
+
   return registry
 }
+
 
 function persistMp3Widget () {
   // 1. Spara hur långt ner användaren har skrollat i låtlistan
@@ -294,30 +356,66 @@ function startMp3Track (widgetIndex, shouldPlay) {
 
   const registry = getOrCreateMp3Registry(widgetIndex)
   const track = tracks[widget.currentTrackIndex] || tracks[0]
-  if (registry.lastSrc !== track.srcUrl) {
-    registry.audio.src = track.srcUrl
-    registry.lastSrc = track.srcUrl
-    registry.progress = 0
+  const ytId = getYouTubeId(track.srcUrl)
+  // Inuti startMp3Track, där YouTube hanteras:
+  if (ytId) {
+    registry.isYouTube = true;
+    registry.audio.pause();
+  
+    const playYT = () => {
+      if (registry.ytPlayer && registry.ytReady && typeof registry.ytPlayer.loadVideoById === 'function') {
+        if (registry.lastSrc !== track.srcUrl) {
+          registry.ytPlayer.loadVideoById(ytId);
+          registry.lastSrc = track.srcUrl;
+        }
+        if (shouldPlay) {
+          registry.ytPlayer.playVideo();
+          registry.isPlaying = true;
+        } else {
+          registry.ytPlayer.pauseVideo();
+          registry.isPlaying = false;
+        }
+        if (typeof persistMp3Widget === 'function') persistMp3Widget();
+      } else {
+        // Vänta om spelaren inte är redo än
+        setTimeout(playYT, 150);
+      }
+    };
+    playYT();
   }
+ 
+  else {
+    // KÖR VIA VANLIG AUDIO (MP3)
+    registry.isYouTube = false
+    if (registry.ytPlayer && registry.ytPlayer.pauseVideo) {
+      registry.ytPlayer.pauseVideo() // Stoppa YouTube
+    }
 
-  if (!shouldPlay) {
-    registry.audio.pause()
-    registry.isPlaying = false
-    persistMp3Widget()
-    return
-  }
+    if (registry.lastSrc !== track.srcUrl) {
+      registry.audio.src = track.srcUrl
+      registry.lastSrc = track.srcUrl
+      registry.progress = 0
+    }
 
-  registry.audio
-    .play()
-    .then(() => {
-      registry.isPlaying = true
-      persistMp3Widget()
-    })
-    .catch(err => {
+    if (!shouldPlay) {
+      registry.audio.pause()
       registry.isPlaying = false
-      console.error('Playback block handled:', err)
       persistMp3Widget()
-    })
+      return
+    }
+
+    registry.audio
+      .play()
+      .then(() => {
+        registry.isPlaying = true
+        persistMp3Widget()
+      })
+      .catch(err => {
+        registry.isPlaying = false
+        console.error('Playback error:', err)
+        persistMp3Widget()
+      })
+  }
 }
 
 function togglePlayTrack (widgetIndex) {
@@ -326,14 +424,28 @@ function togglePlayTrack (widgetIndex) {
   if (!widget || tracks.length === 0) return
 
   const registry = getOrCreateMp3Registry(widgetIndex)
-  if (registry.isPlaying) {
-    registry.audio.pause()
-    registry.isPlaying = false
+
+  if (registry.isYouTube && registry.ytPlayer) {
+    const state = registry.ytPlayer.getPlayerState()
+    if (state === YT.PlayerState.PLAYING) {
+      registry.ytPlayer.pauseVideo()
+      registry.isPlaying = false
+    } else {
+      registry.ytPlayer.playVideo()
+      registry.isPlaying = true
+    }
     persistMp3Widget()
   } else {
-    startMp3Track(widgetIndex, true)
+    if (registry.isPlaying) {
+      registry.audio.pause()
+      registry.isPlaying = false
+      persistMp3Widget()
+    } else {
+      startMp3Track(widgetIndex, true)
+    }
   }
 }
+
 
 function playSpecificTrack (widgetIndex, trackIndex) {
   const widget = normalizeMp3Widget(getMp3Widget(widgetIndex))
@@ -480,31 +592,46 @@ function setPlaylistCoverFromFile (widgetIndex, playlistName, file) {
 function addAudioUrlTrack (widgetIndex) {
   const urlInput = document.getElementById(`mp3-url-${widgetIndex}`)
   if (!urlInput || !urlInput.value.trim()) return
+
   const widget = normalizeMp3Widget(getMp3Widget(widgetIndex))
   if (!widget) return
+
   let url = urlInput.value.trim()
   if (url.includes('github.com') && url.includes('/blob/')) {
     url = url
       .replace('github.com', 'raw.githubusercontent.com')
       .replace('/blob/', '/')
   }
+
   const tracks = getActiveMp3Tracks(widget)
-  let songName = `Web Track ${tracks.length + 1}`
-  try {
-    const filename = url.split('?')[0].split('/').pop()
-    if (filename)
-      songName = decodeURIComponent(filename).replace(/\.[^/.]+$/, '')
-  } catch (e) {}
+  const ytId = getYouTubeId(url)
+
+  let songName = `Track ${tracks.length + 1}`
+  let cover = makeMp3FallbackCover(tracks.length)
+
+  if (ytId) {
+    songName = `YouTube Track (${ytId})`
+    cover = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
+  } else {
+    try {
+      const filename = url.split('?')[0].split('/').pop()
+      if (filename)
+        songName = decodeURIComponent(filename).replace(/\.[^/]+$/, '')
+    } catch (e) {}
+  }
+
   tracks.push({
     name: songName,
     srcUrl: url,
-    coverImg: makeMp3FallbackCover(tracks.length),
+    coverImg: cover,
     isLocalFile: false
   })
+
   if (tracks.length === 1) widget.currentTrackIndex = 0
   urlInput.value = ''
   persistMp3Widget()
 }
+
 
 function handleLocalFileUpload (files, widgetIndex) {
   const widget = normalizeMp3Widget(getMp3Widget(widgetIndex))
@@ -709,13 +836,18 @@ document.addEventListener('keydown', e => {
   }
 })
 
-// 2. Volymkontroll
 function setWidgetVolume (index, volumeValue) {
   const registry = window._mp3Registry && window._mp3Registry[index]
-  if (registry && registry.audio) {
-    registry.audio.volume = parseFloat(volumeValue)
+  if (registry) {
+    if (registry.audio) {
+      registry.audio.volume = parseFloat(volumeValue)
+    }
+    if (registry.ytPlayer && registry.ytPlayer.setVolume) {
+      registry.ytPlayer.setVolume(parseFloat(volumeValue) * 100)
+    }
   }
 }
+
 
 // 3. Spola i låten (Seek)
 function seekWidgetTrack (index, percent) {
