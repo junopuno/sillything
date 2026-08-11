@@ -736,6 +736,8 @@ function renderMp3PlayerMarkup(widget, index) {
   if (!widget.activePlaylistName) {
     widget.activePlaylistName = Object.keys(widget.playlists)[0];
   }
+
+  
   const jsArg = value => JSON.stringify(String(value)).replace(/"/g, '&quot;');
   const activePlaylistName = widget.activePlaylistName;
   const tracks = widget.playlists[activePlaylistName] || [];
@@ -788,51 +790,53 @@ function renderMp3PlayerMarkup(widget, index) {
     return track.name.toLowerCase().includes(searchQuery)
   })
 
+  widget.selectedTrackIndexes = widget.selectedTrackIndexes || []
 
   const trackItemsHtml = filteredTracks.length > 0 ? filteredTracks.map((track, tIdx) => {
-          const activeClass = tIdx === currentIndex ? 'is-active-row' : ''
-          const transferOptions = playlistNames
-            .filter(name => name !== activePlaylistName)
-            .map(
-              name =>
-                `<button type="button" onclick='transferTrack(${index}, ${tIdx}, ${jsArg(
-                  name
-                )})'><i class="fas fa-share"></i> ${escapeHtml(name)}</button>`
-            )
-            .join('')
-          const transferMenu = transferOptions
-            ? `
-      <details class="mp3-menu mp3-transfer-menu" onclick="event.stopPropagation();">
-        <summary title="Move or duplicate track"><i class="fas fa-share"></i></summary>
+    const activeClass = tIdx === currentIndex ? 'is-active-row' : ''
+    const isSelected = widget.selectedTrackIndexes.includes(tIdx)
+    
+
+  
+    const transferOptions = playlistNames
+      .filter(name => name !== activePlaylistName)
+      .map(name => `<button type="button" onclick='transferTrack(${index}, ${tIdx}, ${jsArg(name)})'><i class="fas fa-share"></i> ${escapeHtml(name)}</button>`)
+      .join('')
+  
+    const transferMenu = transferOptions
+      ? `
+  <details class="mp3-menu mp3-transfer-menu" onclick="event.stopPropagation();">
+    <summary title="Move or duplicate track"><i class="fas fa-share"></i></summary>
+    <div class="mp3-menu-panel">
+      <div class="mp3-menu-label">Move or duplicate to</div>
+      ${transferOptions}
+    </div>
+  </details>
+  `
+      : ''
+  
+    return `
+  <div class="mp3-track-chip ${activeClass}" onclick="playSpecificTrack(${index}, ${tIdx})">
+    <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleTrackSelection(${index}, ${tIdx})" />
+    <img class="mp3-track-cover" src="${escapeHtml(track.coverImg || '')}" alt="">
+    <span class="mp3-track-title" title="${escapeHtml(track.name)}">${escapeHtml(track.name)}</span>
+  
+    <div class="mp3-track-actions" onclick="event.stopPropagation();">
+      ${transferMenu}
+      <details class="mp3-menu">
+        <summary title="Track actions"><i class="fas fa-ellipsis-h"></i></summary>
         <div class="mp3-menu-panel">
-          <div class="mp3-menu-label">Move or duplicate to</div>
-          ${transferOptions}
+          <button type="button" onclick="renameTrack(${index}, ${tIdx})"><i class="fas fa-pen"></i> Rename</button>
+          <label><i class="fas fa-image"></i> Cover<input type="file" accept="image/*" onchange="setTrackCoverFromFile(${index}, ${tIdx}, this.files[0])"></label>
+          <button type="button" onclick="moveTrack(${index}, ${tIdx}, -1, event)"><i class="fas fa-arrow-up"></i> Up</button>
+          <button type="button" onclick="moveTrack(${index}, ${tIdx}, 1, event)"><i class="fas fa-arrow-down"></i> Down</button>
+          <button type="button" class="danger" onclick="deleteTrack(${index}, ${tIdx}, event)"><i class="fas fa-trash"></i> Delete</button>
         </div>
       </details>
-    `
-            : ''
-
-          return `
-      <div class="mp3-track-chip ${activeClass}" onclick="playSpecificTrack(${index}, ${tIdx})">
-        <img class="mp3-track-cover" src="${escapeHtml(
-          track.coverImg || ''
-        )}" alt="">
-        <span class="mp3-track-title">${escapeHtml(track.name)}</span>
-       
-        ${transferMenu}
-        <details class="mp3-menu" onclick="event.stopPropagation();">
-          <summary title="Track actions"><i class="fas fa-ellipsis-h"></i></summary>
-          <div class="mp3-menu-panel">
-            <button type="button" onclick="renameTrack(${index}, ${tIdx})"><i class="fas fa-pen"></i> Rename</button>
-            <label><i class="fas fa-image"></i> Cover<input type="file" accept="image/*" onchange="setTrackCoverFromFile(${index}, ${tIdx}, this.files[0])"></label>
-            <button type="button" onclick="moveTrack(${index}, ${tIdx}, -1, event)"><i class="fas fa-arrow-up"></i> Up</button>
-            <button type="button" onclick="moveTrack(${index}, ${tIdx}, 1, event)"><i class="fas fa-arrow-down"></i> Down</button>
-            <button type="button" class="danger" onclick="deleteTrack(${index}, ${tIdx}, event)"><i class="fas fa-trash"></i> Delete</button>
-          </div>
-        </details>
-      </div>
-      `;
-    }).join('') : '';
+    </div>
+  </div>
+  `
+  }).join('') : ''
 
     
 
@@ -881,7 +885,15 @@ function renderMp3PlayerMarkup(widget, index) {
       <div class="mp3-advanced-controls" style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
         <!-- Progress bar -->
         <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem;">
-          <input type="range" min="0" max="100" value="${duration ? (currentTime/duration)*100 : 0}" onchange="seekWidgetTrack(${index}, this.value)" style="flex: 1;">
+          <input 
+            type="range" 
+            id="mp3-progress-${index}" 
+            min="0" 
+            max="100" 
+            value="${duration ? (currentTime/duration)*100 : 0}" 
+            onchange="seekWidgetTrack(${index}, this.value)" 
+            style="flex: 1;"
+          >
         </div>
       
         <!-- Volume control -->
@@ -904,6 +916,7 @@ function renderMp3PlayerMarkup(widget, index) {
               </div>
             </details>
           </div>
+          
           <div class="mp3-scroll-list">${playlistItemsHtml}</div>
         </section>
 
@@ -919,6 +932,54 @@ function renderMp3PlayerMarkup(widget, index) {
               </div>
             </details>
           </div>
+          ${widget.selectedTrackIndexes && widget.selectedTrackIndexes.length > 0 ? `
+            <div class="mp3-multi-select-bar">
+              <span class="mp3-select-count">${widget.selectedTrackIndexes.length} valda</span>
+              
+              <div class="mp3-multi-select-actions">
+                <!-- Duplicera i samma lista -->
+                <button type="button" title="Duplicera i samma lista" onclick="duplicateSelectedTracks(${index})">
+                  <i class="fas fa-clone"></i>
+                </button>
+          
+                ${playlistNames.filter(name => name !== activePlaylistName).length > 0 ? `
+                  <!-- Kopiera till en annan spellista -->
+                  <details class="mp3-menu" onclick="event.stopPropagation();">
+                    <summary title="Kopiera till annan spellista"><i class="fas fa-copy"></i></summary>
+                    <div class="mp3-menu-panel">
+                      <div class="mp3-menu-label">Kopiera till...</div>
+                      ${playlistNames
+                        .filter(name => name !== activePlaylistName)
+                        .map(name => `<button type="button" onclick='copySelectedTracksToPlaylist(${index}, ${jsArg(name)})'><i class="fas fa-copy"></i> ${escapeHtml(name)}</button>`)
+                        .join('')}
+                    </div>
+                  </details>
+          
+                  <!-- Flytta till en annan spellista -->
+                  <details class="mp3-menu" onclick="event.stopPropagation();">
+                    <summary title="Flytta till annan spellista"><i class="fas fa-share"></i></summary>
+                    <div class="mp3-menu-panel">
+                      <div class="mp3-menu-label">Flytta till...</div>
+                      ${playlistNames
+                        .filter(name => name !== activePlaylistName)
+                        .map(name => `<button type="button" onclick='transferSelectedTracks(${index}, ${jsArg(name)})'><i class="fas fa-share"></i> ${escapeHtml(name)}</button>`)
+                        .join('')}
+                    </div>
+                  </details>
+                ` : ''}
+          
+                <!-- Radera valda -->
+                <button type="button" class="danger" title="Radera valda" onclick="deleteSelectedTracks(${index})">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+                
+                <!-- Rensa markering -->
+                <button type="button" title="Rensa markering" onclick="clearTrackSelection(${index})">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          ` : ''}
           <div class="mp3-scroll-list tracks-list">${trackItemsHtml}</div>
         </section>
         

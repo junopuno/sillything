@@ -872,3 +872,133 @@ input[type="range"] {
   color: #e74c3c;
 }
 
+/* --- LÅTRAD FIX --- */
+.mp3-track-chip {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Titeln hamnar direkt bredvid bilden och fyller utrymmet upp till knapparna */
+.mp3-track-title {
+  flex: 1 !important;
+  min-width: 0 !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
+}
+
+/* Menyknapparna hålls fast längst till höger */
+.mp3-track-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  flex-shrink: 0 !important;
+  margin-left: 4px !important;
+}
+
+/* Säkerställ att checkbox och omslagsbild inte trycks ihop */
+.mp3-track-chip input[type="checkbox"],
+.mp3-track-cover {
+  flex-shrink: 0 !important;
+}
+/* --- SÖTA Y2K CHECKBOXAR --- */
+.mp3-track-chip input[type="checkbox"] {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  border: 1.5px solid #000 !important;
+  border-radius: 5px !important;
+  background: #fff !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  box-shadow: 1px 1px 0px #000 !important;
+  transition: all 0.1s ease !important;
+  outline: none !important;
+}
+
+.mp3-track-chip input[type="checkbox"]:hover {
+  transform: scale(1.05) !important;
+}
+
+/* När checkboxen är i-kryssad */
+.mp3-track-chip input[type="checkbox"]:checked {
+  background: #ffb3ba !important; /* Söt pastellrosa */
+}
+
+.mp3-track-chip input[type="checkbox"]:checked::after {
+  content: '✓' !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  color: #000 !important;
+}
+
+
+/* --- MARKERAD LÅTRAD (BORDER + MOCK/GLOW-EFFEKT) --- */
+/* Vi använder :has() så att kortet känner av om checkboxen inuti är ikryssad */
+.mp3-track-chip:has(input[type="checkbox"]:checked) {
+  border: 2px solid #000 !important;
+  box-shadow: 2px 2px 0px #000, 0 0 8px rgba(255, 179, 186, 0.6) !important;
+  background: linear-gradient(90deg, #ffe5ec 0%, #fff0f5 100%) !important;
+  transform: translateY(-1px) !important;
+}
+
+.mp3-multi-select-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 4px 8px !important;
+  margin-bottom: 6px !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: 1.5px solid #000 !important;
+  border-radius: 12px !important;
+}
+
+.mp3-select-count {
+  font-size: 0.75rem !important;
+  font-weight: bold !important;
+  color: #000 !important;
+}
+
+.mp3-multi-select-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+/* Tvingar knappar och menyknappar att bli perfekta Y2K-cirklar */
+.mp3-multi-select-actions button,
+.mp3-multi-select-actions .mp3-menu summary {
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 0.75rem !important;
+  border: 1.5px solid #000 !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+  color: #000 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 1px 1px 0px #000 !important;
+  list-style: none !important;
+}
+
+.mp3-multi-select-actions button.danger {
+  background: #ffb3ba !important;
+}
+
+.mp3-multi-select-actions .mp3-menu {
+  position: relative !important;
+}
