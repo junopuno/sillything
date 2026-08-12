@@ -202,10 +202,6 @@ function getOrCreateMp3Registry (widgetIndex) {
     const audio = new Audio()
     registry = {
       audio: audio,
-      ytPlayer: null,
-      ytReady: false,
-      isYouTube: false,
-      isPlaying: false,
       progress: 0,
       duration: 0,
       lastSrc: ''
@@ -220,63 +216,41 @@ function getOrCreateMp3Registry (widgetIndex) {
       updateMp3Progress(widgetIndex, true)
     )
   }
-
-  // Kontrollera om DOM-elementet finns och om spelaren behöver initieras/återskapas
-  const targetEl = document.getElementById(`yt-hidden-player-${widgetIndex}`)
-  if (
-    targetEl &&
-    (!registry.ytPlayer || !document.contains(registry.ytPlayer.getIframe?.()))
-  ) {
-    registry.ytReady = false
-
-    const initYT = () => {
-      if (window.YT && window.YT.Player) {
-        // Töm elementet innan ny instans skapas
-        targetEl.innerHTML = ''
-        const container = document.createElement('div')
-        targetEl.appendChild(container)
-
-        registry.ytPlayer = new YT.Player(container, {
-          height: '0',
-          width: '0',
-          playerVars: { autoplay: 0, controls: 0 },
-          events: {
-            onReady: () => {
-              registry.ytReady = true
-            },
-            onStateChange: event => {
-              if (event.data === YT.PlayerState.ENDED) {
-                handleMp3Ended(widgetIndex)
-              }
-            }
-          }
-        })
-      } else {
-        setTimeout(initYT, 150)
-      }
-    }
-    initYT()
-  }
-
-  return registry
 }
 
 
 function persistMp3Widget () {
-  // 1. Spara hur långt ner användaren har skrollat i låtlistan
+  // 1. Spara scrollpositionen
   const trackList = document.querySelector('.tracks-list')
   const savedScroll = trackList ? trackList.scrollTop : 0
 
-  // 2. Din befintliga kod (sparar datan och ritar om)
-  if (typeof storage !== 'undefined') storage.set('_horizon_v7', data)
+  // 2. Spara datan permanent till _horizon_v7
+  // Använd både din custom storage-wrapper (om den finns) och direkt localStorage som fallback
+  const dataToSave =
+    typeof window._mp3WidgetsData !== 'undefined'
+      ? window._mp3WidgetsData
+      : typeof data !== 'undefined'
+      ? data
+      : null
+
+  if (dataToSave) {
+    if (typeof storage !== 'undefined' && typeof storage.set === 'function') {
+      storage.set('_horizon_v7', dataToSave)
+    } else {
+      localStorage.setItem('_horizon_v7', JSON.stringify(dataToSave))
+    }
+  }
+
+  // 3. Rita om gränssnittet
   if (typeof render === 'function') render()
 
-  // 3. Sätt tillbaka scrollen direkt efter omritningen
+  // 4. Återställ scrollen
   const newTrackList = document.querySelector('.tracks-list')
   if (newTrackList) {
     newTrackList.scrollTop = savedScroll
   }
 }
+
 
 
 function toggleShuffle (widgetIndex) {
