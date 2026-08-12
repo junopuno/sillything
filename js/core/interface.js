@@ -1145,3 +1145,21 @@ function handleTrackDrop (event, widgetIndex, targetTrackIndex) {
   persistMp3Widget()
 }
 
+// Hämta sparad data från IndexedDB när sidan laddas om
+async function loadInitialData () {
+  try {
+    if (typeof localforage !== 'undefined') {
+      const saved = await localforage.getItem('_horizon_v7')
+      if (saved) {
+        data = saved
+        window._mp3WidgetsData = saved
+        if (typeof render === 'function') render()
+      }
+    }
+  } catch (e) {
+    console.error('Kunde inte läsa in data vid start:', e)
+  }
+}
+
+// Kör funktionen så fort sidan har laddats klart
+document.addEventListener('DOMContentLoaded', loadInitialData)

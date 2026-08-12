@@ -345,63 +345,108 @@ function triggerImportData() {
   input.value = '';
   input.click();
 }
-function handleImportDataFile(files) {
-  if (!files || !files.length) return;
-  const file = files[0];
-  if (!file) return;
+function handleImportDataFile (files) {
+  if (!files || !files.length) return
+  const file = files[0]
+  if (!file) return
 
-  const maxSize = 5 * 1024 * 1024; // 5 MB
+  const maxSize = 5 * 1024 * 1024 // 5 MB
   if (file.size > maxSize) {
-    if (!confirm('File is larger than 5MB and may take time to import. Continue?')) return;
+    if (
+      !confirm('File is larger than 5MB and may take time to import. Continue?')
+    )
+      return
   }
 
-  const progWrap = document.getElementById('import-progress');
-  const progBar = document.getElementById('import-progress-bar');
-  const progText = document.getElementById('import-progress-text');
-  if (progWrap) { progWrap.style.display = 'flex'; if (progBar) progBar.value = 0; if (progText) progText.textContent = '0%'; }
+  const progWrap = document.getElementById('import-progress')
+  const progBar = document.getElementById('import-progress-bar')
+  const progText = document.getElementById('import-progress-text')
+  if (progWrap) {
+    progWrap.style.display = 'flex'
+    if (progBar) progBar.value = 0
+    if (progText) progText.textContent = '0%'
+  }
 
-  pushSnapshot(); // allow undo
+  pushSnapshot() // allow undo
 
-  const reader = new FileReader();
-  reader.onprogress = (e) => {
+  const reader = new FileReader()
+  reader.onprogress = e => {
     if (e.lengthComputable && progBar) {
-      const p = Math.round((e.loaded / e.total) * 100);
-      progBar.value = p;
-      if (progText) progText.textContent = p + '%';
+      const p = Math.round((e.loaded / e.total) * 100)
+      progBar.value = p
+      if (progText) progText.textContent = p + '%'
     }
-  };
-  reader.onload = () => {
+  }
+
+  // OBS: Se till att 'async () => {' står här!
+  reader.onload = async () => {
     try {
-      const imported = JSON.parse(reader.result);
+      const imported = JSON.parse(reader.result)
       if (typeof validateImport === 'function') {
-        const result = validateImport(imported);
-        if (!result.valid) throw new Error(result.errors.join('; '));
+        const result = validateImport(imported)
+        if (!result.valid) throw new Error(result.errors.join('; '))
       } else {
-        if (!imported || typeof imported !== 'object') throw new Error('Invalid JSON');
-        if (!Array.isArray(imported.data) || !Array.isArray(imported.frontPageWidgets)) {
-          throw new Error('The import file must contain a valid data structure.');
+        if (!imported || typeof imported !== 'object')
+          throw new Error('Invalid JSON')
+        if (
+          !Array.isArray(imported.data) ||
+          !Array.isArray(imported.frontPageWidgets)
+        ) {
+          throw new Error(
+            'The import file must contain a valid data structure.'
+          )
         }
       }
-      if (!confirm('Importing data will replace your current workspace and lists. Continue?')) { if (progWrap) progWrap.style.display = 'none'; return; }
 
-      data = imported.data.map(normalizeCategory);
-      frontPageWidgets = imported.frontPageWidgets.map(widget => normalizeWidget(widget));
-      activeIdx = null;
-      activeSubId = null;
-      storage.set('_horizon_v7', data);
-      storage.set('alvis_front_geo', frontPageWidgets);
-      render();
-      showToast('success', 'Data imported successfully.');
+      if (
+        !confirm(
+          'Importing data will replace your current workspace and lists. Continue?'
+        )
+      ) {
+        if (progWrap) progWrap.style.display = 'none'
+        return
+      }
+
+      data = imported.data.map(normalizeCategory)
+      frontPageWidgets = imported.frontPageWidgets.map(widget =>
+        normalizeWidget(widget)
+      )
+      activeIdx = null
+      activeSubId = null
+
+      // Sparning till IndexedDB
+      // Efter att data = imported.data.map(...) har körts:
+      if (typeof localforage !== 'undefined') {
+        await localforage.setItem('_horizon_v7', data)
+      }
+
+
+      storage.set('alvis_front_geo', frontPageWidgets)
+      localStorage.removeItem('_horizon_v7')
+
+      render()
+      showToast('success', 'Data imported successfully.')
     } catch (error) {
-      console.error(error);
-      showToast('error', 'Unable to import data: ' + (error.message || error));
+      console.error(error)
+      showToast('error', 'Unable to import data: ' + (error.message || error))
     } finally {
-      if (progWrap) { setTimeout(() => { progWrap.style.display = 'none'; if (progBar) progBar.value = 0; if (progText) progText.textContent = ''; }, 500); }
+      if (progWrap) {
+        setTimeout(() => {
+          progWrap.style.display = 'none'
+          if (progBar) progBar.value = 0
+          if (progText) progText.textContent = ''
+        }, 500)
+      }
     }
-  };
-  reader.onerror = () => { showToast('error','Unable to read file.'); if (progWrap) progWrap.style.display = 'none'; };
-  reader.readAsText(file);
+  }
+
+  reader.onerror = () => {
+    showToast('error', 'Unable to read file.')
+    if (progWrap) progWrap.style.display = 'none'
+  }
+  reader.readAsText(file)
 }
+
 
 // --- Import UX helpers: toast, snapshots, drag/drop, undo ---
 function showToast(type, message, timeout = 3500) {

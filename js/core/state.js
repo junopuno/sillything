@@ -1,35 +1,52 @@
-// I state.js:
 const storage = {
-  get: (key, defaultValue) => {
-    // Behåll din befintliga get-logik för minnet/synkront om det behövs
+  get: async (key, defaultValue) => {
+    if (key === '_horizon_v7') {
+      if (typeof localforage !== 'undefined') {
+        const value = await localforage.getItem(key)
+        return value !== null ? value : defaultValue
+      }
+    }
     const storedValue = localStorage.getItem(key)
     return storedValue ? JSON.parse(storedValue) : defaultValue
   },
   set: (key, value) => {
-    // Om det är din tunga MP3/widget-data, spara till IndexedDB!
     if (key === '_horizon_v7') {
-      localforage.setItem(key, value).catch(err => {
-        console.error('Kunde inte spara _horizon_v7 till IndexedDB:', err)
-      })
-      // Rensa gammal localStorage-kopia så den inte tar upp 10 MB
-      localStorage.removeItem(key)
+      // Spara BARA om value faktiskt innehåller någonting!
+      if (typeof localforage !== 'undefined' && Array.isArray(value) && value.length > 0) {
+        localforage.setItem(key, value).catch(err => console.error(err));
+      }
+      localStorage.removeItem(key);
     } else {
-      // För mindre inställningar (t.ex. 'alvis_theme_pack') kan vanliga localStorage ligga kvar
       try {
-        localStorage.setItem(key, JSON.stringify(value))
+        localStorage.setItem(key, JSON.stringify(value));
       } catch (e) {
-        console.warn('localStorage full för nyckel:', key)
+        console.warn('localStorage full för:', key);
       }
     }
   }
 }
 
 
-let data = storage.get('_horizon_v7', []);
-let activeIdx = null;
-let activeSubId = null;
-let categoryDragMoved = false;
-let openInspectorState = null;
+
+// Starta med tom lista som reserv
+let data = []
+let activeIdx = null
+let activeSubId = null
+let categoryDragMoved = false
+let openInspectorState = null
+
+// Läs in datan från IndexedDB direkt vid start
+;(async () => {
+  if (typeof localforage !== 'undefined') {
+    const saved = await localforage.getItem('_horizon_v7')
+    if (saved) {
+      data = saved
+      window._mp3WidgetsData = saved
+      if (typeof render === 'function') render()
+    }
+  }
+})()
+
 
 function createDefaultStyle() {
   return {
@@ -54,17 +71,40 @@ function createDefaultStyle() {
     showHeader: true
   };
 }
+let rawFrontGeo = storage.get('alvis_front_geo', [])
 
-let frontPageWidgets = storage.get('alvis_front_geo', [
-  { id: 'geo-date', type: 'date', title: 'Today', pos: { x: 40, y: 30 }, size: { w: 160, h: 180 }, style: createDefaultStyle() },
-  { id: 'geo-cal', type: 'cal', title: 'Calendar Grid', pos: { x: 230, y: 30 }, size: { w: 320, h: 180 }, style: createDefaultStyle() }
-]);
+// Säkerställ att frontPageWidgets ALLTID är en giltig Array
+let frontPageWidgets =
+  Array.isArray(rawFrontGeo) && rawFrontGeo.length > 0
+    ? rawFrontGeo
+    : [
+        {
+          id: 'geo-date',
+          type: 'date',
+          title: 'Today',
+          pos: { x: 40, y: 30 },
+          size: { w: 160, h: 180 },
+          style: createDefaultStyle()
+        },
+        {
+          id: 'geo-cal',
+          type: 'cal',
+          title: 'Calendar Grid',
+          pos: { x: 230, y: 30 },
+          size: { w: 320, h: 180 },
+          style: createDefaultStyle()
+        }
+      ]
 
-let widgetPresets = storage.get('alvis_widget_presets', [
-  { id: 'preset-clean', name: 'Clean', style: createDefaultStyle() },
-  { id: 'preset-bold', name: 'Bold', style: { ...createDefaultStyle(), borderWidth: '2px', headerHeight: '45px', headerBorderBottom: '2px solid #7b2cbf' } },
-  { id: 'preset-minimal', name: 'Minimal', style: { ...createDefaultStyle(), borderWidth: '0px', headerHeight: '35px', headerBg: 'transparent', headerBorderBottom: 'none' } }
-]);
+
+      let rawPresets = storage.get('alvis_widget_presets', []);
+      let widgetPresets = Array.isArray(rawPresets) && rawPresets.length > 0
+        ? rawPresets
+        : [
+            { id: 'preset-clean', name: 'Clean', style: createDefaultStyle() },
+            { id: 'preset-bold', name: 'Bold', style: { ...createDefaultStyle(), borderWidth: '2px', headerHeight: '45px' } },
+            { id: 'preset-minimal', name: 'Minimal', style: { ...createDefaultStyle(), borderWidth: '0px', headerHeight: '35px' } }
+          ];
 
 const taskStatuses = ['todo', 'doing', 'done'];
 const priorityLabels = { low: 'Low', medium: 'Medium', high: 'High' };
