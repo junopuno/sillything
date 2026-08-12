@@ -202,6 +202,10 @@ function getOrCreateMp3Registry (widgetIndex) {
     const audio = new Audio()
     registry = {
       audio: audio,
+      ytPlayer: null,
+      ytReady: false,
+      isYouTube: false,
+      isPlaying: false,
       progress: 0,
       duration: 0,
       lastSrc: ''
@@ -216,8 +220,46 @@ function getOrCreateMp3Registry (widgetIndex) {
       updateMp3Progress(widgetIndex, true)
     )
   }
-}
 
+  // Kontrollera om DOM-elementet finns och om spelaren behöver initieras/återskapas
+  const targetEl = document.getElementById(`yt-hidden-player-${widgetIndex}`)
+  if (
+    targetEl &&
+    (!registry.ytPlayer || !document.contains(registry.ytPlayer.getIframe?.()))
+  ) {
+    registry.ytReady = false
+
+    const initYT = () => {
+      if (window.YT && window.YT.Player) {
+        // Töm elementet innan ny instans skapas
+        targetEl.innerHTML = ''
+        const container = document.createElement('div')
+        targetEl.appendChild(container)
+
+        registry.ytPlayer = new YT.Player(container, {
+          height: '0',
+          width: '0',
+          playerVars: { autoplay: 0, controls: 0 },
+          events: {
+            onReady: () => {
+              registry.ytReady = true
+            },
+            onStateChange: event => {
+              if (event.data === YT.PlayerState.ENDED) {
+                handleMp3Ended(widgetIndex)
+              }
+            }
+          }
+        })
+      } else {
+        setTimeout(initYT, 150)
+      }
+    }
+    initYT()
+  }
+
+  return registry
+}
 
 function persistMp3Widget () {
   // 1. Spara scrollpositionen
