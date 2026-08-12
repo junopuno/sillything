@@ -815,12 +815,11 @@ function exportPlaylistJson (index) {
   downloadAnchor.click()
   downloadAnchor.remove()
 }
-
-// 3. Importera spellista från sparad JSON-fil
 function importPlaylistJson (index, file) {
   if (!file) return
 
   const reader = new FileReader()
+
   reader.onload = function (e) {
     try {
       const data = JSON.parse(e.target.result)
@@ -832,16 +831,18 @@ function importPlaylistJson (index, file) {
         return
       }
 
-      // Spara importerade låtar och omslag i widget-objektet
       widget.playlists[data.playlistName] = data.tracks
       if (!widget.playlistCovers) widget.playlistCovers = {}
-      if (data.coverImg)
+      if (data.coverImg) {
         widget.playlistCovers[data.playlistName] = data.coverImg
+      }
 
       widget.activePlaylistName = data.playlistName
 
-      normalizeMp3Widget(widget)
-      saveAndRender()
+      if (typeof normalizeMp3Widget === 'function') normalizeMp3Widget(widget)
+
+      persistMp3Widget()
+      if (typeof render === 'function') render()
     } catch (err) {
       alert('Kunde inte läsa JSON-filen: ' + err.message)
     }
@@ -849,6 +850,7 @@ function importPlaylistJson (index, file) {
 
   reader.readAsText(file)
 }
+
 // 1. Tangentbordsgenvägar (Space = Spela/Pausa, Pil Höger/Vänster = Byt låt)
 document.addEventListener('keydown', e => {
   if (['input', 'textarea'].includes(e.target.tagName.toLowerCase())) return
