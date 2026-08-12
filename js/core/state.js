@@ -1,21 +1,29 @@
-/* --- INITIAL DATA & STATE --- */
+// I state.js:
 const storage = {
-  get(key, fallback) {
-    try {
-      const storedValue = localStorage.getItem(key);
-      return storedValue ? JSON.parse(storedValue) : fallback;
-    } catch (error) {
-      return fallback;
-    }
+  get: (key, defaultValue) => {
+    // Behåll din befintliga get-logik för minnet/synkront om det behövs
+    const storedValue = localStorage.getItem(key)
+    return storedValue ? JSON.parse(storedValue) : defaultValue
   },
-  set(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-      // file:// pages can block localStorage, so the app keeps working in memory.
+  set: (key, value) => {
+    // Om det är din tunga MP3/widget-data, spara till IndexedDB!
+    if (key === '_horizon_v7') {
+      localforage.setItem(key, value).catch(err => {
+        console.error('Kunde inte spara _horizon_v7 till IndexedDB:', err)
+      })
+      // Rensa gammal localStorage-kopia så den inte tar upp 10 MB
+      localStorage.removeItem(key)
+    } else {
+      // För mindre inställningar (t.ex. 'alvis_theme_pack') kan vanliga localStorage ligga kvar
+      try {
+        localStorage.setItem(key, JSON.stringify(value))
+      } catch (e) {
+        console.warn('localStorage full för nyckel:', key)
+      }
     }
   }
-};
+}
+
 
 let data = storage.get('_horizon_v7', []);
 let activeIdx = null;

@@ -261,38 +261,50 @@ function getOrCreateMp3Registry (widgetIndex) {
   return registry
 }
 
-function persistMp3Widget () {
-  // 1. Spara scrollpositionen
+async function persistMp3Widget () {
   const trackList = document.querySelector('.tracks-list')
   const savedScroll = trackList ? trackList.scrollTop : 0
 
-  // 2. Spara datan permanent till _horizon_v7
-  // Använd både din custom storage-wrapper (om den finns) och direkt localStorage som fallback
-  const dataToSave =
-    typeof window._mp3WidgetsData !== 'undefined'
-      ? window._mp3WidgetsData
-      : typeof data !== 'undefined'
-      ? data
-      : null
-
-  if (dataToSave) {
-    if (typeof storage !== 'undefined' && typeof storage.set === 'function') {
-      storage.set('_horizon_v7', dataToSave)
-    } else {
-      localStorage.setItem('_horizon_v7', JSON.stringify(dataToSave))
-    }
+  try {
+    // Sparar direkt i IndexedDB
+    await localforage.setItem('_horizon_v7', window._mp3WidgetsData)
+  } catch (err) {
+    console.error('Kunde inte spara till IndexedDB:', err)
   }
 
-  // 3. Rita om gränssnittet
   if (typeof render === 'function') render()
 
-  // 4. Återställ scrollen
   const newTrackList = document.querySelector('.tracks-list')
   if (newTrackList) {
     newTrackList.scrollTop = savedScroll
   }
 }
 
+
+async function loadMp3Data () {
+  try {
+    let savedData = await localforage.getItem('_horizon_v7')
+
+    if (!savedData) {
+      const oldStorage = localStorage.getItem('_horizon_v7')
+      if (oldStorage) {
+        savedData = JSON.parse(oldStorage)
+        await localforage.setItem('_horizon_v7', savedData)
+      }
+    }
+
+    if (savedData) {
+      window._mp3WidgetsData = savedData
+    }
+  } catch (err) {
+    console.error('Fel vid inläsning från IndexedDB:', err)
+  }
+
+  if (typeof render === 'function') render()
+}
+
+// Anropas när sidan laddas
+loadMp3Data()
 
 
 function toggleShuffle (widgetIndex) {
